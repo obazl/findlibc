@@ -2,6 +2,7 @@ load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag")
 # load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
+load("@makeheaders//src:BUILD.bzl", "makeheaders")
 load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//:BUILD.bzl",
@@ -21,7 +22,8 @@ cc_library(
     name = "meta_lexer",
     # alwayslink = True,
     srcs = [
-        "meta_lexis.c", "meta_lexis.h",
+        "meta_lexis.c",
+        ":mkhdrs"
     ] + select({
         "@platforms//os:linux": [
             "//src/linux:strlcat.c",
@@ -56,8 +58,8 @@ cc_library(
     # }),
     copts = COPTS + [
         "-Isrc",
-        "-I$(GENDIR)/src",
-        "-I$(GENDIR)/external/libfindlib~{}/src".format(
+        "-I$(GENDIR)/src/lexer",
+        "-I$(GENDIR)/external/libfindlib~{}/src/lexer".format(
             LIBFINDLIB_VERSION),
         "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
         "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
@@ -125,42 +127,48 @@ cc_library(
     ]
 )
 
-########
-genrule(
-    name = "gen_meta_lexis",
-    tools = ["@re2c//:re2c"],
-    outs  = ["meta_lexis.c"],
-    srcs = ["meta_lexis.re"],
-    cmd   = "\n".join([
-        "for f in $(locations @re2c//:re2c)",
-        "do",
-        "    if [ -f $$f ]",
-        "    then",
-        "        if [ re2c = `basename $$f` -a -x $$f ]",
-        "        then",
-        "            break",
-        "        fi",
-        "    fi",
-        "done",
-        "$$f --conditions --tags -o $(@D)/meta_lexis.c $(location meta_lexis.re)",
-    ]),
-    visibility = ["//visibility:public"]
-)
+################################################################
+# re2c takes a long time to build, so we only run it
+# when meta_lexis.re changes, which is rare.
+# to regenerate meta_lexis.c: delete src/lexer/meta_lexis.c
+# and uncomment this target. Once the new version is copacetic,
+# copy it into the src tree and comment this out.
+# genrule(
+#     name = "gen_meta_lexis",
+#     tools = ["@re2c//:re2c"],
+#     outs  = ["meta_lexis.c"],
+#     srcs = ["meta_lexis.re"],
+#     cmd   = "\n".join([
+#         "for f in $(locations @re2c//:re2c)",
+#         "do",
+#         "    if [ -f $$f ]",
+#         "    then",
+#         "        if [ re2c = `basename $$f` -a -x $$f ]",
+#         "        then",
+#         "            break",
+#         "        fi",
+#         "    fi",
+#         "done",
+#         "$$f --conditions --tags -o $(@D)/meta_lexis.c $(location meta_lexis.re)",
+#     ]),
+#     visibility = ["//visibility:public"]
+# )
 
 ########
-genrule(
+makeheaders(
     name = "mkhdrs",
-    srcs = ["meta_lexis.c", "//src/parser:meta_syntaxis.c"],
-    outs = ["meta_lexis.h"],
-    cmd = " ".join([
-        "SRC1=$(location meta_lexis.c);",
-        "SRCDIR1=`dirname $$SRC1`;",
-        "$(execpath @makeheaders//src:makeheaders)",
-        "$(location //src/parser:meta_syntaxis.c):",
-        "$(location meta_lexis.c);",
-        # "cp $${SRCDIR1}/*.h $(@D)",
-    ]),
-    tools = ["@makeheaders//src:makeheaders"],
+    srcs = ["meta_lexis.c"],
+    additional_srcs = ["//src/parser:meta_syntaxis.c"],
+    # outs = ["meta_lexis.h"],
+    # cmd = " ".join([
+    #     "SRC1=$(location meta_lexis.c);",
+    #     "SRCDIR1=`dirname $$SRC1`;",
+    #     "$(execpath @makeheaders//src:makeheaders)",
+    #     "$(location //src/parser:meta_syntaxis.c):",
+    #     "$(location meta_lexis.c);",
+    #     # "cp $${SRCDIR1}/*.h $(@D)",
+    # ]),
+    # tools = ["@makeheaders//src:makeheaders"],
     visibility = ["//visibility:public"]
 )
 

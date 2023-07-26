@@ -2,8 +2,8 @@ load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag")
 # load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
-load("@lemon//src:BUILD.bzl", "lemon")
 load("@makeheaders//src:BUILD.bzl", "makeheaders")
+load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//:BUILD.bzl",
      "BASE_COPTS",
@@ -30,7 +30,7 @@ cc_library(
     # alwayslink = True,
     srcs = [
         "meta_parser.c",
-        ":xmkhdrs",
+        ":mkhdrs",
         # "meta_parser.h",
     ],
     deps = [
@@ -52,7 +52,7 @@ cc_library(
         "-Isrc",
 
         "-I$(GENDIR)/src/parser",
-        "-Iexternal/libfindlib_cc~{}/src".format(
+        "-I$(GENDIR)/external/libfindlib~{}/src/parser".format(
             LIBFINDLIB_VERSION),
 
         "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
@@ -88,17 +88,7 @@ cc_library(
         "meta_settings.c",
         "meta_values.c",
         "utils.c",
-
-        ":xmkhdrs",
-
-        # "meta_syntaxis.h",
-        # "meta_entries.h",
-        # "meta_flags.h",
-        # "meta_packages.h",
-        # "meta_properties.h",
-        # "meta_settings.h",
-        # "meta_values.h",
-        # "utils.h"
+        ":mkhdrs",
     ] + select({
         "//config/profile:dev?": [
             "debug_meta.c", # "debug_meta.h"
@@ -122,7 +112,7 @@ cc_library(
         "-Isrc",
 
         "-I$(GENDIR)/src/parser",
-        "-Iexternal/libfindlib_cc~{}/src".format(
+        "-I$(GENDIR)/external/libfindlib~{}/src/parser".format(
             LIBFINDLIB_VERSION),
 
         "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
@@ -161,11 +151,8 @@ lemon(
 
 ################################################################
 makeheaders(
-    name = "xmkhdrs",
-    out = "parser.h",
-    export_interface = False,
+    name = "mkhdrs",
     srcs = [
-        # "//src/lexer:meta_lexis.c",
         "meta_parser.c",
         "meta_syntaxis.c",
         "meta_entries.c",
@@ -184,143 +171,7 @@ makeheaders(
         # no header outputs for these
         "//src/lexer:meta_lexis.c",
     ],
-    # outs = [
-    #     "meta_parser.h",
-    #     "meta_syntaxis.h",
-    #     "meta_entries.h",
-    #     "meta_flags.h",
-    #     "meta_packages.h",
-    #     "meta_properties.h",
-    #     "meta_settings.h",
-    #     "meta_values.h",
-    #     "utils.h",
-    #     # "debug_meta.h"
-    # # ],
-    # ] + select({
-    #     "//config/profile:dev?": ["debug_meta.h"],
-    #     "//conditions:default": []
-    # }),
 )
-
-# genrule(
-#     name = "mkhdrs",
-#     srcs = [
-#         # "//src/lexer:meta_lexis.c:",
-#         "meta_parser.c",
-#         "meta_syntaxis.c",
-#         "meta_entries.c",
-#         "meta_flags.c",
-#         "meta_packages.c",
-#         "meta_properties.c",
-#         "meta_settings.c",
-#         "meta_values.c",
-#         "utils.c",
-#         # "debug_meta.c"
-#     ],
-#     # ] + select({
-#     #     "//config/profile:dev?": ["debug_meta.c"],
-#     #     "//conditions:default": []
-#     # }),
-#     # ] + select({
-#     #     "@platforms//os:linux": ["//src/linux:strlcpy.c", "//src/linux:strlcat.c"],
-#     #     "//conditions:default":   []
-#     outs = [
-#         "meta_parser.h",
-#         "meta_syntaxis.h",
-#         "meta_entries.h",
-#         "meta_flags.h",
-#         "meta_packages.h",
-#         "meta_properties.h",
-#         "meta_settings.h",
-#         "meta_values.h",
-#         "utils.h",
-#         # "debug_meta.h"
-#     ],
-#     # ] + select({
-#     #     "//config/profile:dev?": ["debug_meta.h"],
-#     #     "//conditions:default": []
-#     # }),
-#     cmd = " ".join([
-#         "echo CWD: `pwd`;",
-#         "SRC1=$(location meta_values.c);",
-#         "SRCDIR1=`dirname $$SRC1`;",
-#         "$(execpath @makeheaders//src:makeheaders)",
-#         # "$(location //src/lexer:meta_lexis.c)",
-#         "$(location meta_syntaxis.c)",
-#         "$(location meta_parser.c)",
-
-#         "$(location meta_entries.c)",
-#         "$(location meta_flags.c)",
-#         "$(location meta_packages.c)",
-#         "$(location meta_properties.c)",
-#         "$(location meta_settings.c)",
-#         "$(location meta_values.c)",
-#         "$(location utils.c)",
-#         # "$(location debug_meta.c)",
-#         ";",
-#         "cp $${SRCDIR1}/*.h $(@D)",
-#     ]),
-#     tools = ["@makeheaders//src:makeheaders"],
-#     visibility = ["//visibility:public"]
-# )
-
-# genrule(
-#     name = "mkhdrs_debug",
-#     srcs = [
-#         "meta_parser.c",
-#         "meta_entries.c",
-#         "meta_flags.c",
-#         "meta_packages.c",
-#         "meta_properties.c",
-#         "meta_settings.c",
-#         "meta_values.c",
-#         # "meta_lexis.c",
-#         "meta_syntaxis.c",
-#         "debug_meta.c",
-#         "ansi_colors.h",
-#         "utils.c",
-#         # "config_opam.c",
-
-#         # "@liblog_cc//src:logc:log.h",
-#         # "//vendored/uthash:utarray.c",
-#         # "//vendored/uthash:utarray.h",
-#     ] + select({
-#         "@platforms//os:linux": ["//src/linux:strlcpy.c", "//src/linux:strlcat.c"],
-#         "//conditions:default":   []
-#     }),
-#     outs = [
-#         "debug_meta.h",
-#     ],
-#     cmd = " ".join([
-#         "SRC1=$(location debug_meta.c);",
-#         "SRCDIR1=`dirname $$SRC1`;",
-#         "$(execpath @makeheaders//src:makeheaders)",
-#         # "$(SRCS);",
-
-#         "$(location meta_parser.c)",
-#         "$(location meta_entries.c)",
-#         "$(location meta_flags.c)",
-#         "$(location meta_packages.c)",
-#         "$(location meta_properties.c)",
-#         "$(location meta_settings.c)",
-#         "$(location meta_values.c)",
-#         # "$(location meta_lexis.c)",
-#         "$(location meta_syntaxis.c)",
-#         "$(location debug_meta.c)",
-#         "$(location utils.c)",
-#         # "$(location config_opam.c)",
-#         "$(location ansi_colors.h);",
-
-#         # "$(location //src:log.c):", # do not emit header
-#         # "$(location @liblog_cc//src:logc:log.h)",
-#         # "$(location //vendored/uthash:utarray.c):",
-#         # "$(location //vendored/uthash:utarray.h)",
-
-#         "cp $${SRCDIR1}/*.h $(@D)",
-#     ]),
-#     tools = ["@makeheaders//src:makeheaders"],
-#     visibility = ["//visibility:public"]
-# )
 
 ################################################################
 ## enable meta ast debugging: --//bootstrap:ast-dump

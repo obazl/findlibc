@@ -97,16 +97,12 @@ LOCAL void lex_META_file(char *_fname)
 #if defined(TRACING)
     log_debug("lexing");
 #endif
-    /* THE_METAFILE[0] = '\0'; */
-    /* mystrcat(THE_METAFILE, fname); */
 
     struct meta_lexer_s *meta_lexer = malloc(sizeof(struct meta_lexer_s));
     meta_lexer_init(meta_lexer, fname, buffer);
 
-    /* void* pMetaParser = ParseAlloc (malloc); */
-    /* /\* InitParserState(ast); *\/ */
-    /* /\* ParseTrace(stdout, "trace_"); *\/ */
     int tok;
+    // currently meta_token is struct{char *s}
     union meta_token *mtok = malloc(sizeof(union meta_token));
 
     /* if (logger.lex_verbosity == 0) */
@@ -117,12 +113,12 @@ LOCAL void lex_META_file(char *_fname)
 
     /* log_set_quiet(false); */
     /* log_set_level(LOG_TRACE); */
-    /* log_info("starting"); */
+    log_info("starting");
     /* log_set_quiet(true); */
 
     while ( (tok = get_next_meta_token(meta_lexer, mtok)) != 0 ) {
         /* log_set_quiet(true); */
-#if defined(DEBUG_LEX)
+/* #if defined(DEBUG_LEX) */
         switch(tok) {
         case DIRECTORY:
             log_trace("lex DIRECTORY: %s", mtok->s); break;
@@ -161,10 +157,12 @@ LOCAL void lex_META_file(char *_fname)
         default:
             log_trace("other: %d", tok); break;
         }
-#endif
+        /* if (mtok->s) free(mtok->s); */
+/* #endif */
         /* Parse(pMetaParser, tok, mtok, MAIN_PKG); // , &sState); */
 
-        mtok = malloc(sizeof(union meta_token));
+        /* mtok = malloc(sizeof(union meta_token)); */
+
         /* if (logger.lex_verbosity == 0) */
         /*     log_set_quiet(false); */
         /* else */
@@ -172,30 +170,9 @@ LOCAL void lex_META_file(char *_fname)
         /*     log_set_level(logger.lex_log_level); */
     }
 
-    /*     if (logger.parse_verbosity == 0) */
-    /*         log_set_quiet(false); */
-    /*     else */
-    /*         log_set_quiet(logger.quiet); */
-    /*         log_set_level(logger.parse_log_level); */
-    /* log_set_quiet(true); */
-
-    /* log_trace("lex: end of input"); */
-
-    /* Parse(pMetaParser, 0, mtok, MAIN_PKG); // , &sState); */
-    /* ParseFree(pMetaParser, free ); */
-
-    /* if (logger.verbosity == 0) */
-    /*     log_set_quiet(false); */
-    /* else */
-    /*     log_set_quiet(logger.quiet); */
-    /* log_set_level(logger.log_level); */
-
-    /* log_set_quiet(false); */
-
-    /* log_trace("PARSED %s", fname); */
+    log_trace("lex: end of input");
 
     free(buffer);
-    /* return MAIN_PKG; */
 }
 
 int main(int argc, char *argv[])
