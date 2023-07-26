@@ -6,11 +6,12 @@ load("@makeheaders//src:BUILD.bzl", "makeheaders")
 load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//:BUILD.bzl",
-     "BASE_COPTS",
-     "BASE_DEFINES",
      "LIBFINDLIB_VERSION",
      "LIBLOG_CC_VERSION",
      "UTHASH_VERSION")
+load("//config/cc:BUILD.bzl",
+     "BASE_COPTS",
+     "BASE_DEFINES")
 
 COPTS = BASE_COPTS
 DEFINES = BASE_DEFINES # + ["TRACING"]

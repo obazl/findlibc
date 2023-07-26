@@ -1,9 +1,9 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//:BUILD.bzl",
+
+load("//:BUILD.bzl", "LIBLOG_CC_VERSION", "UTHASH_VERSION")
+load("//config/cc:BUILD.bzl",
      COPTS = "BASE_COPTS",
-     DEFINES = "BASE_DEFINES",
-     "LIBLOG_CC_VERSION",
-     "UTHASH_VERSION")
+     DEFINES = "BASE_DEFINES")
 
 ################################################################
 cc_binary(

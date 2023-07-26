@@ -6,16 +6,17 @@ load("@makeheaders//src:BUILD.bzl", "makeheaders")
 load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//:BUILD.bzl",
-     "BASE_COPTS",
-     "BASE_DEFINES",
      "LIBFINDLIB_VERSION",
      "LIBLOG_CC_VERSION",
      "UTHASH_VERSION")
+load("//config/cc:BUILD.bzl",
+     "BASE_COPTS",
+     "BASE_DEFINES")
 
 COPTS = BASE_COPTS
 DEFINES = BASE_DEFINES
 
-exports_files(glob(["*.c"]))
+exports_files(glob(["meta_lexis.c"]))
 
 ################################################################
 cc_library(
@@ -32,7 +33,7 @@ cc_library(
         ],
         "//conditions:default":   []
     # }) + select({
-    #     "//compilation_mode:dbg?": [
+    #     "//config/compilation_mode:dbg?": [
     #         "//src:debug.c", "//src/hdrs:debug.h",
     #         "debug_meta.c", "//src/hdrs:debug_meta.h",
     #         "debug_findlib.c", "//src/hdrs:debug_findlib.h"
@@ -48,7 +49,7 @@ cc_library(
         "@uthash//src:uthash",
     ],
     # ] + select({
-    #     "//compilation_mode:dbg?": [
+    #     "//config/compilation_mode:dbg?": [
     #         "//src/debug"
     #     ],
     #     "//config/profile:dev?": [
@@ -64,7 +65,7 @@ cc_library(
         "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
         "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
     ] + select({
-        "//compilation_mode:dbg?": [
+        "//config/compilation_mode:dbg?": [
             "-Isrc/debug"
         ],
         "//config/profile:dev?": [
@@ -118,7 +119,7 @@ cc_library(
     #     "//coswitch/templates:ocaml_unix.BUILD",
     # ],
     # ] + select({
-    #     "//compilation_mode:dbg?": ["//src:debug"],
+    #     "//config/compilation_mode:dbg?": ["//src:debug"],
     #     "//conditions:default": []
     # }),
     visibility = [

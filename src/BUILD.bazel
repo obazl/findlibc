@@ -5,11 +5,12 @@ load("@bazel_skylib//rules:common_settings.bzl",
 load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//:BUILD.bzl",
-     "BASE_COPTS",
-     "BASE_DEFINES",
      "LIBFINDLIB_VERSION",
      "LIBLOG_CC_VERSION",
      "UTHASH_VERSION")
+load("//config/cc:BUILD.bzl",
+     "BASE_COPTS",
+     "BASE_DEFINES")
 
 COPTS = BASE_COPTS
 DEFINES = BASE_DEFINES + ["TRACING"]
@@ -44,7 +45,7 @@ cc_library(
         # "//src/parser:meta_parser",
     ],
     # ] + select({
-    #     "//compilation_mode:dbg?": [
+    #     "//config/compilation_mode:dbg?": [
     #         "//src/debug"
     #     ],
     #     "//config/profile:dev?": [
@@ -62,7 +63,7 @@ cc_library(
         "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
         "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
     ] + select({
-        "//compilation_mode:dbg?": [
+        "//config/compilation_mode:dbg?": [
             "-Isrc/debug"
         ],
         "//config/profile:dev?": [
@@ -116,7 +117,7 @@ cc_library(
     #     "//coswitch/templates:ocaml_unix.BUILD",
     # ],
     # ] + select({
-    #     "//compilation_mode:dbg?": ["//src:debug"],
+    #     "//config/compilation_mode:dbg?": ["//src:debug"],
     #     "//conditions:default": []
     # }),
     visibility = ["//visibility:public"]
@@ -161,7 +162,7 @@ cc_library(
 #     #     "//coswitch/templates:ocaml_unix.BUILD",
 #     # ],
 #     # ] + select({
-#     #     "//compilation_mode:dbg?": ["//src:debug"],
+#     #     "//config/compilation_mode:dbg?": ["//src:debug"],
 #     #     "//conditions:default": []
 #     # }),
 #     visibility = ["//visibility:public"]
@@ -253,7 +254,7 @@ genrule(
     #     "@platforms//os:linux": ["//src/linux:strlcpy.c", "//src/linux:strlcat.c"],
     #     "//conditions:default":   []
     # # }) + select({
-    # #     "//compilation_mode:dbg?": ["debug_meta.c"],
+    # #     "//config/compilation_mode:dbg?": ["debug_meta.c"],
     # #     "//conditions:default": []
     # }),
     outs = [
@@ -316,7 +317,7 @@ genrule(
 #         "@platforms//os:linux": ["//src/linux:strlcpy.c", "//src/linux:strlcat.c"],
 #         "//conditions:default":   []
 #     }) + select({
-#         "//compilation_mode:dbg?": ["debug_meta.c"],
+#         "//config/compilation_mode:dbg?": ["debug_meta.c"],
 #         "//conditions:default": []
 #     }),
 #     outs = [
