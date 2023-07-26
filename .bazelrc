@@ -1,0 +1,32 @@
+common --symlink_prefix=.bazel/
+common --experimental_cc_shared_library
+common --enable_bzlmod
+
+## use this to add a local registry:
+try-import .config/registries.bazelrc
+common --registry=https://raw.githubusercontent.com/obazl/registry/main/
+common --registry=https://bcr.bazel.build
+
+common --color=yes
+common:show --subcommands=pretty_print
+common:show --verbose_failures
+common:show --test_output=all
+test:show --test_output=all
+test:show --keep_going
+
+common:showdev --config=show
+common:showdev --//config/profile=dev
+common:showdev --compilation_mode=fastbuild
+test:showdev --test_output=all
+test:showdev --keep_going
+
+common:showyy --config=showdev
+common:showyy --//src/parser:yydebug
+
+common:q --noshow_progress
+common:q --noshow_loading_progress
+common:q --show_result=0
+common:q --ui_event_filters=-info,-debug
+
+# try-import .config/dev.bazelrc
+try-import .config/user.bazelrc

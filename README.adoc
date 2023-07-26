@@ -1,0 +1,44 @@
+= libfindlib
+C library for reading OCaml findlib META files
+
+
+== configuration
+
+
+
+=== findlib.conf
+
+Default:  `/usr/local/etc/findlib.conf`.
+
+Fields:
+*  `path`: used to look up packages
+* `destdir`: used to install new packages
+* `metadir`: absolute path of metaregistry (see below)
+
+
+Sample content:
+
+----
+destdir="/usr/local/lib/ocaml"
+path="/usr/local/lib/ocaml"
+ocamlc="ocamlc.opt"
+ocamlopt="ocamlopt.opt"
+ocamldep="ocamldep.opt"
+ocamldoc="ocamldoc.opt"
+----
+
+Env var:  `OCAMLFIND_CONF`
+
+=== site-lib
+
+Determined by vars in `findlib.conf`:
+
+
+=== META
+
+Default: the META file for each package is in the pkg root directory.
+This is the layout used by OPAM.
+
+Alternative layout: all META files in one directory, named
+`META.<pkgname>`. See
+link:http://projects.camlcity.org/projects/dl/findlib-1.9.6/doc/ref-html/r1061.html[site-lib].

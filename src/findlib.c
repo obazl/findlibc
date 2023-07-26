@@ -1,0 +1,3 @@
+/* findlib.c */
+
+int test;

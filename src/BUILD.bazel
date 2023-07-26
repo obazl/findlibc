@@ -1,0 +1,461 @@
+load("@bazel_skylib//rules:common_settings.bzl",
+     "bool_flag", "string_flag")
+# load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+
+load("@lemon//src:BUILD.bzl", "lemon")
+
+load("//:BUILD.bzl",
+     "BASE_COPTS",
+     "BASE_DEFINES",
+     "LIBFINDLIB_VERSION",
+     "LIBLOG_CC_VERSION",
+     "UTHASH_VERSION")
+
+COPTS = BASE_COPTS
+DEFINES = BASE_DEFINES + ["TRACING"]
+
+exports_files(glob(["*.c"]))
+
+# filegroup(
+#     name = "mkhdrs_srcs",
+#     srcs = glob(["*.c"]),
+#     visibility = ["//visibility:public"]
+# )
+
+# filegroup(
+#     name = "srcs",
+#     srcs = glob(["emit*.c", "meta*.c"]),
+#     visibility = ["//visibility:public"]
+# )
+
+cc_library(
+    name = "findlib",
+    # alwayslink = True,
+    srcs = [
+        # "findlib.c",
+    ],
+    hdrs = ["findlib.h"],
+    deps = [
+        # "//src/lexer:meta_lexer",
+        "//src/parser:meta_parser",
+        "@liblog_cc//src:logc",
+        "@uthash//src:uthash",
+        # "//src/lexer:meta_lexer",
+        # "//src/parser:meta_parser",
+    ],
+    # ] + select({
+    #     "//compilation_mode:dbg?": [
+    #         "//src/debug"
+    #     ],
+    #     "//config/profile:dev?": [
+    #         "//src/debug"
+    #     ],
+    #     "//conditions:default": []
+    # }),
+    copts = COPTS + [
+        "-Isrc",
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/external/libfindlib~{}/src".format(
+            LIBFINDLIB_VERSION),
+
+        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
+        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
+    ] + select({
+        "//compilation_mode:dbg?": [
+            "-Isrc/debug"
+        ],
+        "//config/profile:dev?": [
+            "-Isrc/debug"
+        ],
+        "//conditions:default": []
+    }),
+    local_defines = DEFINES + select({
+        "//config/debug:debug?": ["DEVBUILD"],
+        "//conditions:default":   []
+    }) + select({
+        "//config/debug:trace?": ["TRACING"],
+        "//conditions:default":   []
+    }),
+    # data  = [
+    #     "//coswitch/templates:ocaml_bigarray.BUILD",
+    #     "//coswitch/templates:ocaml_c_api.BUILD",
+    #     "//coswitch/templates:ocaml_compiler-libs.BUILD",
+    #     "//coswitch/templates/compiler_libs:bytecomp.BUILD",
+    #     "//coswitch/templates/compiler_libs:common.BUILD",
+    #     "//coswitch/templates/compiler_libs:optcomp.BUILD",
+    #     "//coswitch/templates/compiler_libs:toplevel.BUILD",
+    #     "//coswitch/templates/compiler_libs:native_toplevel.BUILD",
+    #     "//coswitch/templates:ocaml_dynlink.BUILD",
+    #     "//coswitch/templates:ocaml_num.BUILD",
+    #     "//coswitch/templates:ocaml_ocamldoc.BUILD",
+    #     "//coswitch/templates:ocaml_runtime.BUILD",
+    #     "//coswitch/templates:ocaml_stdlib.BUILD",
+    #     "//coswitch/templates:ocaml_str.BUILD",
+
+    #     "//coswitch/templates/platforms:BUILD.bazel",
+    #     "//coswitch/templates/platforms/build:BUILD.bazel",
+    #     "//coswitch/templates/platforms/target:BUILD.bazel",
+
+    #     "//coswitch/templates:toolchain/adapters/local.BUILD",
+    #     "//coswitch/templates:toolchain/adapters/local.BUILD.mustache",
+    #     "//coswitch/templates:toolchain/adapters/linux/x86_64.BUILD",
+    #     "//coswitch/templates:toolchain/adapters/linux/arm.BUILD",
+    #     "//coswitch/templates:toolchain/adapters/macos/x86_64.BUILD",
+    #     "//coswitch/templates:toolchain/adapters/macos/arm.BUILD",
+    #     "//coswitch/templates:toolchain/profiles/profiles.BUILD",
+    #     "//coswitch/templates:toolchain/selectors/local.BUILD",
+    #     "//coswitch/templates:toolchain/selectors/linux/x86_64.BUILD",
+    #     "//coswitch/templates:toolchain/selectors/linux/arm.BUILD",
+    #     "//coswitch/templates:toolchain/selectors/macos/arm.BUILD",
+    #     "//coswitch/templates:toolchain/selectors/macos/x86_64.BUILD",
+    #     # "//coswitch/templates/host/bazel:BUILD.bazel",
+    #     # "//coswitch/templates/host/build:BUILD.bazel",
+    #     # "//coswitch/templates/host/target:BUILD.bazel",
+    #     "//coswitch/templates:ocaml_threads.BUILD",
+    #     "//coswitch/templates:ocaml_unix.BUILD",
+    # ],
+    # ] + select({
+    #     "//compilation_mode:dbg?": ["//src:debug"],
+    #     "//conditions:default": []
+    # }),
+    visibility = ["//visibility:public"]
+)
+
+#     # data  = [
+#     #     "//coswitch/templates:ocaml_bigarray.BUILD",
+#     #     "//coswitch/templates:ocaml_c_api.BUILD",
+#     #     "//coswitch/templates:ocaml_compiler-libs.BUILD",
+#     #     "//coswitch/templates/compiler_libs:bytecomp.BUILD",
+#     #     "//coswitch/templates/compiler_libs:common.BUILD",
+#     #     "//coswitch/templates/compiler_libs:optcomp.BUILD",
+#     #     "//coswitch/templates/compiler_libs:toplevel.BUILD",
+#     #     "//coswitch/templates/compiler_libs:native_toplevel.BUILD",
+#     #     "//coswitch/templates:ocaml_dynlink.BUILD",
+#     #     "//coswitch/templates:ocaml_num.BUILD",
+#     #     "//coswitch/templates:ocaml_ocamldoc.BUILD",
+#     #     "//coswitch/templates:ocaml_runtime.BUILD",
+#     #     "//coswitch/templates:ocaml_stdlib.BUILD",
+#     #     "//coswitch/templates:ocaml_str.BUILD",
+
+#     #     "//coswitch/templates/platforms:BUILD.bazel",
+#     #     "//coswitch/templates/platforms/build:BUILD.bazel",
+#     #     "//coswitch/templates/platforms/target:BUILD.bazel",
+
+#     #     "//coswitch/templates:toolchain/adapters/local.BUILD",
+#     #     "//coswitch/templates:toolchain/adapters/local.BUILD.mustache",
+#     #     "//coswitch/templates:toolchain/adapters/linux/x86_64.BUILD",
+#     #     "//coswitch/templates:toolchain/adapters/linux/arm.BUILD",
+#     #     "//coswitch/templates:toolchain/adapters/macos/x86_64.BUILD",
+#     #     "//coswitch/templates:toolchain/adapters/macos/arm.BUILD",
+#     #     "//coswitch/templates:toolchain/profiles/profiles.BUILD",
+#     #     "//coswitch/templates:toolchain/selectors/local.BUILD",
+#     #     "//coswitch/templates:toolchain/selectors/linux/x86_64.BUILD",
+#     #     "//coswitch/templates:toolchain/selectors/linux/arm.BUILD",
+#     #     "//coswitch/templates:toolchain/selectors/macos/arm.BUILD",
+#     #     "//coswitch/templates:toolchain/selectors/macos/x86_64.BUILD",
+#     #     # "//coswitch/templates/host/bazel:BUILD.bazel",
+#     #     # "//coswitch/templates/host/build:BUILD.bazel",
+#     #     # "//coswitch/templates/host/target:BUILD.bazel",
+#     #     "//coswitch/templates:ocaml_threads.BUILD",
+#     #     "//coswitch/templates:ocaml_unix.BUILD",
+#     # ],
+#     # ] + select({
+#     #     "//compilation_mode:dbg?": ["//src:debug"],
+#     #     "//conditions:default": []
+#     # }),
+#     visibility = ["//visibility:public"]
+# )
+
+########
+# CMD_HDR = "\n".join([
+#     "SRC1=$(location config.c)",
+#     "SRCDIR1=`dirname $$SRC1`;",
+# ])
+
+FINDLIB_MKHDRS_SRCS = [
+    # "emit_build_bazel.c",
+    # "emit_jsoo.c",
+    # "emit_ocaml_repo.c",
+    # "emit_pkg_bindir.c",
+    # "handlers_findlib.c",
+    "meta_parser.c",
+    "meta_entries.c",
+    "meta_flags.c",
+    # "meta_fs.c",
+    "meta_packages.c",
+    "meta_properties.c",
+    "meta_settings.c",
+    "meta_values.c",
+    # "meta_lexis.c",
+    "meta_syntaxis.c",
+    "ansi_colors.h",
+    "utils.c",
+    # "config_opam.c",
+
+        # "//src/dune:libdune.h",
+    # "//vendored/uthash:utarray.c",
+    # "//vendored/uthash:utarray.h",
+    # "//vendored/uthash:uthash.h",
+    # "//vendored/uthash:utstring.h",
+    # "//src:log.c",
+    # "@liblog_cc//src:logc:log.h",
+]
+
+FINDLIB_MKHDRS_LOCNS = " ".join([
+    # "$(location emit_build_bazel.c)",
+    # "$(location emit_jsoo.c)",
+    # "$(location emit_ocaml_repo.c)",
+    # "$(location emit_pkg_bindir.c)",
+    # "$(location handlers_findlib.c)",
+    "$(location meta_parser.c)",
+    "$(location meta_entries.c)",
+    "$(location meta_flags.c)",
+    "$(location meta_packages.c)",
+    "$(location meta_properties.c)",
+    "$(location meta_settings.c)",
+    "$(location meta_values.c)",
+    # "$(location meta_lexis.c)",
+    "$(location meta_syntaxis.c)",
+    "$(location ansi_colors.h)",
+    "$(location utils.c)",
+    # "$(location config_opam.c)",
+
+    # "$(location //vendored/uthash:utarray.c):", # do not emit header
+    # "$(location //vendored/uthash:utarray.h)",
+    # "$(location //vendored/uthash:uthash.h)",
+    # "$(location //vendored/uthash:utstring.h)",
+    # "$(location //src:log.c):", # do not emit header
+    # "$(location @liblog_cc//src:logc:log.h)",
+    # "$(location //src/dune:libdune.h)",
+])
+
+genrule(
+    name = "mkhdrs_export",
+    srcs = [
+        # "//src/parser:srcs",
+        # # "//src/parser:meta_parser.h"
+
+        "//src/lexer:meta_lexis.c",
+        "//src/parser:meta_syntaxis.c",
+        "//src/parser:meta_parser.c",
+        "//src/parser:meta_entries.c",
+        "//src/parser:meta_flags.c",
+        "//src/parser:meta_packages.c",
+        "//src/parser:meta_properties.c",
+        "//src/parser:meta_settings.c",
+        "//src/parser:meta_values.c",
+
+        "//src/parser:debug_meta.c",
+    ],
+    # srcs = FINDLIB_MKHDRS_SRCS + [
+    # ] + select({
+    #     "@platforms//os:linux": ["//src/linux:strlcpy.c", "//src/linux:strlcat.c"],
+    #     "//conditions:default":   []
+    # # }) + select({
+    # #     "//compilation_mode:dbg?": ["debug_meta.c"],
+    # #     "//conditions:default": []
+    # }),
+    outs = [
+        "findlib.h"
+    ],
+    cmd = " ".join([
+        "SRC1=$(location //src/parser:meta_parser.c);",
+        "SRCDIR1=`dirname $$SRC1`;",
+        "$(execpath @makeheaders//src:makeheaders) -H",
+
+        "$(location //src/lexer:meta_lexis.c)",
+
+        "$(location //src/parser:meta_syntaxis.c)",
+        "$(location //src/parser:meta_parser.c)",
+        "$(location //src/parser:meta_entries.c)",
+        "$(location //src/parser:meta_flags.c)",
+        "$(location //src/parser:meta_packages.c)",
+        "$(location //src/parser:meta_properties.c)",
+        "$(location //src/parser:meta_settings.c)",
+        "$(location //src/parser:meta_values.c)",
+        "$(location //src/parser:debug_meta.c)",
+        # "$(location //src/parser:utils.c)",
+        # "$(location config_opam.c)",
+        # "$(location ansi_colors.h)",
+        "> $@",
+        # "cp $${SRCDIR1}/*.h $(@D)",
+    ]),
+    tools = ["@makeheaders//src:makeheaders"],
+    visibility = ["//visibility:public"]
+)
+
+# genrule(
+#     name = "mkhdrs_libfindlib",
+#     # srcs = FINDLIB_MKHDRS_SRCS + [
+#     srcs = [
+#         "emit_build_bazel.c",
+#         "emit_ocaml_repo.c",
+#         "emit_pkg_bindir.c",
+#         "meta_parser.c",
+#         "meta_entries.c",
+#         "meta_flags.c",
+#         # "meta_fs.c",
+#         "meta_packages.c",
+#         "meta_properties.c",
+#         "meta_settings.c",
+#         "meta_values.c",
+#         "meta_lexis.c",
+#         "meta_syntaxis.c",
+
+#         # "//src/dune:libdune.h",
+#         # "//vendored/uthash:utarray.c",
+#         # "//vendored/uthash:utarray.h",
+#         # "//vendored/uthash:uthash.h",
+#         # "//vendored/uthash:utstring.h",
+#         # "//src:log.c",
+#         # "@liblog_cc//src:logc:log.h",
+#         # "//src:utils.c",
+#         # "//src:ansi_colors.h",
+#     ] + select({
+#         "@platforms//os:linux": ["//src/linux:strlcpy.c", "//src/linux:strlcat.c"],
+#         "//conditions:default":   []
+#     }) + select({
+#         "//compilation_mode:dbg?": ["debug_meta.c"],
+#         "//conditions:default": []
+#     }),
+#     outs = [
+#         "findlib.h",
+#     ],
+#     cmd = " ".join([
+#         "SRC1=$(location meta_parser.c);",
+#         "SRCDIR1=`dirname $$SRC1`;",
+#         "$(execpath @makeheaders//src:makeheaders) -H",
+#         # "$(SRCS) \\",
+#         # FINDLIB_MKHDRS_LOCNS,
+#         "$(location emit_build_bazel.c)",
+#         "$(location emit_ocaml_repo.c)",
+#         "$(location emit_pkg_bindir.c)",
+#         "$(location meta_parser.c)",
+#         "$(location meta_entries.c)",
+#         "$(location meta_flags.c)",
+#         "$(location meta_packages.c)",
+#         "$(location meta_properties.c)",
+#         "$(location meta_settings.c)",
+#         "$(location meta_values.c)",
+#         "$(location meta_lexis.c)",
+#         "$(location meta_syntaxis.c)",
+#         "> $@",
+#     ]),
+#     tools = ["@makeheaders//src:makeheaders"],
+#     visibility = ["//visibility:public"]
+# )
+
+# genrule(
+#     name = "mkhdrs_debug",
+#     srcs = [
+#         "meta_parser.c",
+#         "meta_entries.c",
+#         "meta_flags.c",
+#         "meta_packages.c",
+#         "meta_properties.c",
+#         "meta_settings.c",
+#         "meta_values.c",
+#         # "meta_lexis.c",
+#         "meta_syntaxis.c",
+#         "debug_meta.c",
+#         "ansi_colors.h",
+#         "utils.c",
+#         # "config_opam.c",
+
+#         # "@liblog_cc//src:logc:log.h",
+#         # "//vendored/uthash:utarray.c",
+#         # "//vendored/uthash:utarray.h",
+#     ] + select({
+#         "@platforms//os:linux": ["//src/linux:strlcpy.c", "//src/linux:strlcat.c"],
+#         "//conditions:default":   []
+#     }),
+#     outs = [
+#         "debug_meta.h",
+#     ],
+#     cmd = " ".join([
+#         "SRC1=$(location debug_meta.c);",
+#         "SRCDIR1=`dirname $$SRC1`;",
+#         "$(execpath @makeheaders//src:makeheaders)",
+#         # "$(SRCS);",
+
+#         "$(location meta_parser.c)",
+#         "$(location meta_entries.c)",
+#         "$(location meta_flags.c)",
+#         "$(location meta_packages.c)",
+#         "$(location meta_properties.c)",
+#         "$(location meta_settings.c)",
+#         "$(location meta_values.c)",
+#         # "$(location meta_lexis.c)",
+#         "$(location meta_syntaxis.c)",
+#         "$(location debug_meta.c)",
+#         "$(location utils.c)",
+#         # "$(location config_opam.c)",
+#         "$(location ansi_colors.h);",
+
+#         # "$(location //src:log.c):", # do not emit header
+#         # "$(location @liblog_cc//src:logc:log.h)",
+#         # "$(location //vendored/uthash:utarray.c):",
+#         # "$(location //vendored/uthash:utarray.h)",
+
+#         "cp $${SRCDIR1}/*.h $(@D)",
+#     ]),
+#     tools = ["@makeheaders//src:makeheaders"],
+#     visibility = ["//visibility:public"]
+# )
+
+################################################################
+## enable meta ast debugging: --//bootstrap:ast-dump
+bool_flag(name = "ast-dump", build_setting_default = 0)
+config_setting(name = "ast-dump-enabled",
+               flag_values = {":ast-dump": "True"})
+config_setting(name = "ast-dump-disabled",
+               flag_values = {":ast-dump": "False"})
+
+## enable meta ast debugging: --//bootstrap:ast-trace
+bool_flag(name = "ast-trace", build_setting_default = 0)
+config_setting(name = "ast-trace-enabled",
+               flag_values = {":ast-trace": "True"})
+config_setting(name = "ast-trace-disabled",
+               flag_values = {":ast-trace": "False"})
+
+## enable parser debugging: --//bootstrap:yydebug
+bool_flag(name = "yydebug", build_setting_default = 0)
+config_setting(name = "yydebug-enabled", flag_values = {":yydebug": "True"})
+config_setting(name = "yydebug-disabled", flag_values = {":yydebug": "False"})
+bool_flag(name = "yydebug-exit-on-error", build_setting_default = 0)
+config_setting(name = "yydebug-exit-on-error-enabled",
+               flag_values = {":yydebug-exit-on-error": "True"})
+
+bool_flag(name = "yytrace", build_setting_default = 0)
+config_setting(name = "yytrace-enabled", flag_values = {":yytrace": "True"})
+config_setting(name = "yytrace-disabled", flag_values = {":yytrace": "False"})
+
+## debug parse rules
+string_flag(name = "yydebug-rules", build_setting_default = "")
+config_setting(name = "yydebug-fpf",
+               flag_values = {":yydebug-rules": "fpf"})
+config_setting(name = "yydebug-fvf",
+               flag_values = {":yydebug-rules": "fvf"})
+config_setting(name = "yydebug-filter",
+               flag_values = {":yydebug-rules": "filter"})
+config_setting(name = "yydebug-build-filter",
+               flag_values = {":yydebug-rules": "build-filter"})
+
+## enable lexer debugging: --//bootstrap:lexdebug
+bool_flag(name = "lexdebug", build_setting_default = 0)
+config_setting(name = "lexdebug-enabled", flag_values = {":lexdebug": "True"})
+config_setting(name = "lexdebug-disabled", flag_values = {":lexdebug": "False"})
+
+string_flag(name = "lexdebug-rules", build_setting_default = "")
+config_setting(name = "lexdebug-version",
+               flag_values = {":lexdebug-rules": "version"})
+config_setting(name = "lexdebug-fpf",
+               flag_values = {":lexdebug-rules": "fpf"})
+config_setting(name = "lexdebug-fvf",
+               flag_values = {":lexdebug-rules": "fvf"})
+config_setting(name = "lexdebug-filter",
+               flag_values = {":lexdebug-rules": "filter"})
+config_setting(name = "lexdebug-build-filter",
+               flag_values = {":lexdebug-rules": "build-filter"})
+

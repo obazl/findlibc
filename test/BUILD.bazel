@@ -1,0 +1,113 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//:BUILD.bzl",
+     COPTS = "BASE_COPTS",
+     DEFINES = "BASE_DEFINES",
+     "LIBLOG_CC_VERSION",
+     "UTHASH_VERSION")
+
+################################################################
+cc_binary(
+    name  = "lex_test",
+    linkstatic = 1,
+    srcs  = [
+        "lex_test.c",
+        "lex_test.h",
+    ],
+    copts = COPTS + [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test",
+        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
+        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION)
+    ],
+    local_defines = DEFINES, # ["DEBUG", "DEBUG_LEX"],
+    deps = [
+        "@liblog_cc//src:logc",
+        "@uthash//src:uthash",
+        "//src/lexer:meta_lexer"
+    ],
+)
+
+##########
+cc_binary(
+    name  = "parse_test",
+    linkstatic = 1,
+    srcs  = [
+        "parse_test.c",
+        "parse_test.h",
+    ],
+    deps = [
+        "@liblog_cc//src:logc",
+        "@uthash//src:uthash",
+        "//src:findlib",
+        # "//src/parser:meta_parser"
+    ],
+    copts = COPTS + [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test",
+        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
+        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION)
+    ],
+    local_defines = DEFINES # ["DEBUG"] # , "TRACING"],
+)
+
+################################################################
+# cc_binary(
+#     name  = "walk_test",
+#     linkstatic = 1,
+#     srcs  = [
+#         "walk_test.c",
+#         "walk_test.h",
+#         # "//src:log.h"
+#     ],
+#     copts = COPTS + [
+
+#         "-Isrc",
+#         "-Itest",
+
+#         "-I$(GENDIR)/src",
+#         "-I$(GENDIR)/src/opam",
+#         "-I$(GENDIR)/test/opam",
+
+#         "-Ivendored/uthash",
+
+#         "-Iexternal/mibl/src",
+#         "-I$(GENDIR)/external/mibl/src",
+
+#         "-Iexternal/mibl/opam/test",
+#         "-I$(GENDIR)/external/mibl/test/opam",
+
+#         "-Iexternal/libs7/src",
+#     ],
+#     defines = ["DEBUG", "TRACING"],
+#     deps = [
+#         "//src:treewalker",
+#         # "//src:opam_lexer"
+#     ],
+# )
+
+################################################################
+genrule(
+    name = "mkhdrs",
+    outs = ["lex_test.h", "parse_test.h"],
+    srcs = [
+        "lex_test.c", "parse_test.c",
+        "//src/lexer:meta_lexis.c",
+        "//src/parser:meta_syntaxis.c",
+        "//src/parser:meta_parser.c",
+        "//src/parser:debug_meta.c"
+    ],
+    cmd = "\n".join([
+        "SRC1=$(location lex_test.c)",
+        "SRCDIR1=`dirname $$SRC1`",
+        "$(execpath @makeheaders//src:makeheaders) \\",
+        "    $(location //src/lexer:meta_lexis.c) \\",
+        "    $(location //src/parser:meta_syntaxis.c) \\",
+        "    $(location //src/parser:meta_parser.c) \\",
+        "    $(location //src/parser:debug_meta.c) \\",
+        "    $(location lex_test.c) \\",
+        "    $(location parse_test.c)",
+        "cp $${SRCDIR1}/*.h $(@D)",
+    ]),
+    tools = ["@makeheaders//src:makeheaders"],
+    visibility = ["//visibility:public"]
+)
