@@ -74,10 +74,10 @@ cc_library(
         "//conditions:default": []
     }),
     local_defines = DEFINES + select({
-        "//config/debug:debug?": ["DEVBUILD"],
+        "//config/profile:dev?": ["DEVBUILD"],
         "//conditions:default":   []
     }) + select({
-        "//config/debug:trace?": ["TRACING"],
+        "//config/trace:tracing?": ["TRACING"],
         "//conditions:default":   []
     }),
     # data  = [

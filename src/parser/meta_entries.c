@@ -53,6 +53,7 @@ EXPORT obzl_meta_entry *obzl_meta_entries_nth(obzl_meta_entries *_entries, unsig
 /* **************** */
 EXPORT obzl_meta_property *obzl_meta_entries_property(obzl_meta_entries *_entries, char *_name)
 {
+    TRACE_ENTRY
 #if DEBUG_ENTRIES
     log_trace("obzl_meta_entries_property('%s')", _name);
 #endif
@@ -76,6 +77,7 @@ EXPORT obzl_meta_property *obzl_meta_entries_property(obzl_meta_entries *_entrie
 /* **************** */
 EXPORT char *obzl_meta_directory_property(obzl_meta_entries *_entries)
 {
+    TRACE_ENTRY
 /* #if DEBUG_ENTRIES */
 /*     log_trace("obzl_meta_directory_property"); */
 /* #endif */

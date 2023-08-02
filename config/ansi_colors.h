@@ -1,5 +1,5 @@
-#ifndef ANSI_COLORS_H
-#define ANSI_COLORS_H
+/* #ifndef ANSI_COLORS_H */
+/* #define ANSI_COLORS_H */
 /* ANSI color codes for printf */
 /* https://gist.github.com/RabaDabaDoba/145049536f815903c79944599c6f952a */
 
@@ -83,4 +83,4 @@
 
 // #endif
 
-#endif
+/* #endif */

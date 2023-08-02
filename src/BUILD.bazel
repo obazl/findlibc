@@ -2,6 +2,7 @@ load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag")
 # load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
+load("@makeheaders//src:BUILD.bzl", "makeheaders")
 load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//:BUILD.bzl",
@@ -15,30 +16,22 @@ load("//config/cc:BUILD.bzl",
 COPTS = BASE_COPTS
 DEFINES = BASE_DEFINES + ["TRACING"]
 
-exports_files(glob(["*.c"]))
+exports_files(glob([
+    "ansi_colors.h",
+    "tracing_enabled.h", "tracing_disabled.h",
+    # "utils.c"
+]))
 
-# filegroup(
-#     name = "mkhdrs_srcs",
-#     srcs = glob(["*.c"]),
-#     visibility = ["//visibility:public"]
-# )
-
-# filegroup(
-#     name = "srcs",
-#     srcs = glob(["emit*.c", "meta*.c"]),
-#     visibility = ["//visibility:public"]
-# )
-
+################################################################
 cc_library(
     name = "findlib",
     # alwayslink = True,
-    srcs = [
-        # "findlib.c",
-    ],
+    srcs = [ ],
     hdrs = ["findlib.h"],
     deps = [
         # "//src/lexer:meta_lexer",
         "//src/parser:meta_parser",
+        "//src/map_reduce:findlib_map_reduce",
         "@liblog_cc//src:logc",
         "@uthash//src:uthash",
         # "//src/lexer:meta_lexer",
@@ -53,31 +46,31 @@ cc_library(
     #     ],
     #     "//conditions:default": []
     # }),
-    copts = COPTS + [
-        "-Isrc",
-        "-I$(GENDIR)/src",
-        "-I$(GENDIR)/src",
-        "-I$(GENDIR)/external/libfindlib~{}/src".format(
-            LIBFINDLIB_VERSION),
+    # copts = COPTS + [
+    #     "-Isrc",
+    #     "-I$(GENDIR)/src",
+    #     "-I$(GENDIR)/src",
+    #     "-I$(GENDIR)/external/libfindlib~{}/src".format(
+    #         LIBFINDLIB_VERSION),
 
-        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
-        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
-    ] + select({
-        "//config/compilation_mode:dbg?": [
-            "-Isrc/debug"
-        ],
-        "//config/profile:dev?": [
-            "-Isrc/debug"
-        ],
-        "//conditions:default": []
-    }),
-    local_defines = DEFINES + select({
-        "//config/debug:debug?": ["DEVBUILD"],
-        "//conditions:default":   []
-    }) + select({
-        "//config/debug:trace?": ["TRACING"],
-        "//conditions:default":   []
-    }),
+    #     "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
+    #     "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
+    # ] + select({
+    #     "//config/compilation_mode:dbg?": [
+    #         "-Isrc/debug"
+    #     ],
+    #     "//config/profile:dev?": [
+    #         "-Isrc/debug"
+    #     ],
+    #     "//conditions:default": []
+    # }),
+    # local_defines = DEFINES + select({
+    #     "//config/profile:dev?": ["DEVBUILD"],
+    #     "//conditions:default":   []
+    # }) + select({
+    #     "//config/trace:tracing?": ["TRACING"],
+    #     "//conditions:default":   []
+    # }),
     # data  = [
     #     "//coswitch/templates:ocaml_bigarray.BUILD",
     #     "//coswitch/templates:ocaml_c_api.BUILD",
@@ -174,69 +167,68 @@ cc_library(
 #     "SRCDIR1=`dirname $$SRC1`;",
 # ])
 
-FINDLIB_MKHDRS_SRCS = [
-    # "emit_build_bazel.c",
-    # "emit_jsoo.c",
-    # "emit_ocaml_repo.c",
-    # "emit_pkg_bindir.c",
-    # "handlers_findlib.c",
-    "meta_parser.c",
-    "meta_entries.c",
-    "meta_flags.c",
-    # "meta_fs.c",
-    "meta_packages.c",
-    "meta_properties.c",
-    "meta_settings.c",
-    "meta_values.c",
-    # "meta_lexis.c",
-    "meta_syntaxis.c",
-    "ansi_colors.h",
-    "utils.c",
-    # "config_opam.c",
+# FINDLIB_MKHDRS_SRCS = [
+#     # "emit_build_bazel.c",
+#     # "emit_jsoo.c",
+#     # "emit_ocaml_repo.c",
+#     # "emit_pkg_bindir.c",
+#     # "handlers_findlib.c",
+#     "meta_parser.c",
+#     "meta_entries.c",
+#     "meta_flags.c",
+#     # "meta_fs.c",
+#     "meta_packages.c",
+#     "meta_properties.c",
+#     "meta_settings.c",
+#     "meta_values.c",
+#     # "meta_lexis.c",
+#     "meta_syntaxis.c",
+#     "ansi_colors.h",
+#     "utils.c",
+#     # "config_opam.c",
 
-        # "//src/dune:libdune.h",
-    # "//vendored/uthash:utarray.c",
-    # "//vendored/uthash:utarray.h",
-    # "//vendored/uthash:uthash.h",
-    # "//vendored/uthash:utstring.h",
-    # "//src:log.c",
-    # "@liblog_cc//src:logc:log.h",
-]
+#         # "//src/dune:libdune.h",
+#     # "//vendored/uthash:utarray.c",
+#     # "//vendored/uthash:utarray.h",
+#     # "//vendored/uthash:uthash.h",
+#     # "//vendored/uthash:utstring.h",
+#     # "//src:log.c",
+#     # "@liblog_cc//src:logc:log.h",
+# ]
 
-FINDLIB_MKHDRS_LOCNS = " ".join([
-    # "$(location emit_build_bazel.c)",
-    # "$(location emit_jsoo.c)",
-    # "$(location emit_ocaml_repo.c)",
-    # "$(location emit_pkg_bindir.c)",
-    # "$(location handlers_findlib.c)",
-    "$(location meta_parser.c)",
-    "$(location meta_entries.c)",
-    "$(location meta_flags.c)",
-    "$(location meta_packages.c)",
-    "$(location meta_properties.c)",
-    "$(location meta_settings.c)",
-    "$(location meta_values.c)",
-    # "$(location meta_lexis.c)",
-    "$(location meta_syntaxis.c)",
-    "$(location ansi_colors.h)",
-    "$(location utils.c)",
-    # "$(location config_opam.c)",
+# FINDLIB_MKHDRS_LOCNS = " ".join([
+#     # "$(location emit_build_bazel.c)",
+#     # "$(location emit_jsoo.c)",
+#     # "$(location emit_ocaml_repo.c)",
+#     # "$(location emit_pkg_bindir.c)",
+#     # "$(location handlers_findlib.c)",
+#     "$(location meta_parser.c)",
+#     "$(location meta_entries.c)",
+#     "$(location meta_flags.c)",
+#     "$(location meta_packages.c)",
+#     "$(location meta_properties.c)",
+#     "$(location meta_settings.c)",
+#     "$(location meta_values.c)",
+#     # "$(location meta_lexis.c)",
+#     "$(location meta_syntaxis.c)",
+#     "$(location ansi_colors.h)",
+#     "$(location utils.c)",
+#     # "$(location config_opam.c)",
 
-    # "$(location //vendored/uthash:utarray.c):", # do not emit header
-    # "$(location //vendored/uthash:utarray.h)",
-    # "$(location //vendored/uthash:uthash.h)",
-    # "$(location //vendored/uthash:utstring.h)",
-    # "$(location //src:log.c):", # do not emit header
-    # "$(location @liblog_cc//src:logc:log.h)",
-    # "$(location //src/dune:libdune.h)",
-])
+#     # "$(location //vendored/uthash:utarray.c):", # do not emit header
+#     # "$(location //vendored/uthash:utarray.h)",
+#     # "$(location //vendored/uthash:uthash.h)",
+#     # "$(location //vendored/uthash:utstring.h)",
+#     # "$(location //src:log.c):", # do not emit header
+#     # "$(location @liblog_cc//src:logc:log.h)",
+#     # "$(location //src/dune:libdune.h)",
+# ])
 
-genrule(
+makeheaders(
     name = "mkhdrs_export",
+    out ="findlib.h",
+    export_interface = True,
     srcs = [
-        # "//src/parser:srcs",
-        # # "//src/parser:meta_parser.h"
-
         "//src/lexer:meta_lexis.c",
         "//src/parser:meta_syntaxis.c",
         "//src/parser:meta_parser.c",
@@ -246,9 +238,13 @@ genrule(
         "//src/parser:meta_properties.c",
         "//src/parser:meta_settings.c",
         "//src/parser:meta_values.c",
-
-        "//src/parser:debug_meta.c",
-    ],
+        "//src/map_reduce:findlib_map_reduce.c",
+    ] + select({
+        "//config/profile:dev?": [
+            "//src/parser:meta_debugging.c",
+        ],
+        "//conditions:default": []
+    }),
     # srcs = FINDLIB_MKHDRS_SRCS + [
     # ] + select({
     #     "@platforms//os:linux": ["//src/linux:strlcpy.c", "//src/linux:strlcat.c"],
@@ -257,34 +253,63 @@ genrule(
     # #     "//config/compilation_mode:dbg?": ["debug_meta.c"],
     # #     "//conditions:default": []
     # }),
-    outs = [
-        "findlib.h"
-    ],
-    cmd = " ".join([
-        "SRC1=$(location //src/parser:meta_parser.c);",
-        "SRCDIR1=`dirname $$SRC1`;",
-        "$(execpath @makeheaders//src:makeheaders) -H",
-
-        "$(location //src/lexer:meta_lexis.c)",
-
-        "$(location //src/parser:meta_syntaxis.c)",
-        "$(location //src/parser:meta_parser.c)",
-        "$(location //src/parser:meta_entries.c)",
-        "$(location //src/parser:meta_flags.c)",
-        "$(location //src/parser:meta_packages.c)",
-        "$(location //src/parser:meta_properties.c)",
-        "$(location //src/parser:meta_settings.c)",
-        "$(location //src/parser:meta_values.c)",
-        "$(location //src/parser:debug_meta.c)",
-        # "$(location //src/parser:utils.c)",
-        # "$(location config_opam.c)",
-        # "$(location ansi_colors.h)",
-        "> $@",
-        # "cp $${SRCDIR1}/*.h $(@D)",
-    ]),
-    tools = ["@makeheaders//src:makeheaders"],
     visibility = ["//visibility:public"]
 )
+
+# genrule(
+#     name = "xmkhdrs_export",
+#     srcs = [
+#         # "//src/parser:srcs",
+#         # # "//src/parser:meta_parser.h"
+
+#         "//src/lexer:meta_lexis.c",
+#         "//src/parser:meta_syntaxis.c",
+#         "//src/parser:meta_parser.c",
+#         "//src/parser:meta_entries.c",
+#         "//src/parser:meta_flags.c",
+#         "//src/parser:meta_packages.c",
+#         "//src/parser:meta_properties.c",
+#         "//src/parser:meta_settings.c",
+#         "//src/parser:meta_values.c",
+
+#         "//src/parser:debug_meta.c",
+#     ],
+#     # srcs = FINDLIB_MKHDRS_SRCS + [
+#     # ] + select({
+#     #     "@platforms//os:linux": ["//src/linux:strlcpy.c", "//src/linux:strlcat.c"],
+#     #     "//conditions:default":   []
+#     # # }) + select({
+#     # #     "//config/compilation_mode:dbg?": ["debug_meta.c"],
+#     # #     "//conditions:default": []
+#     # }),
+#     outs = [
+#         "findlib.h"
+#     ],
+#     cmd = " ".join([
+#         "SRC1=$(location //src/parser:meta_parser.c);",
+#         "SRCDIR1=`dirname $$SRC1`;",
+#         "$(execpath @makeheaders//src:makeheaders) -H",
+
+#         "$(location //src/lexer:meta_lexis.c)",
+
+#         "$(location //src/parser:meta_syntaxis.c)",
+#         "$(location //src/parser:meta_parser.c)",
+#         "$(location //src/parser:meta_entries.c)",
+#         "$(location //src/parser:meta_flags.c)",
+#         "$(location //src/parser:meta_packages.c)",
+#         "$(location //src/parser:meta_properties.c)",
+#         "$(location //src/parser:meta_settings.c)",
+#         "$(location //src/parser:meta_values.c)",
+#         "$(location //src/parser:debug_meta.c)",
+#         # "$(location //src/parser:utils.c)",
+#         # "$(location config_opam.c)",
+#         # "$(location ansi_colors.h)",
+#         "> $@",
+#         # "cp $${SRCDIR1}/*.h $(@D)",
+#     ]),
+#     tools = ["@makeheaders//src:makeheaders"],
+#     visibility = ["//visibility:public"]
+# )
 
 # genrule(
 #     name = "mkhdrs_libfindlib",

@@ -18,7 +18,6 @@
 #include "utarray.h"
 #include "utstring.h"
 
-/* #include "libopamparser.h" */
 #include "findlib.h"
 #include "parse_test.h"
 

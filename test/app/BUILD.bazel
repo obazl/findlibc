@@ -1,0 +1,45 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+load("@makeheaders//src:BUILD.bzl", "makeheaders")
+
+load("//:BUILD.bzl",
+     "LIBFINDLIB_VERSION",
+     "LIBLOG_CC_VERSION",
+     "UTHASH_VERSION")
+load("//config/cc:BUILD.bzl",
+     COPTS = "BASE_COPTS",
+     DEFINES = "BASE_DEFINES")
+
+##########
+cc_binary(
+    name  = "meta_parse",
+    linkstatic = 1,
+    srcs  = [
+        "meta_parse.c",
+        ":mkhdrs"
+    ],
+    copts = COPTS + [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test/app",
+        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
+        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION)
+    ],
+    local_defines = DEFINES,
+    deps = [
+        "@liblog_cc//src:logc",
+        "@uthash//src:uthash",
+        "//src:findlib"
+    ],
+)
+
+############
+makeheaders(
+    name = "mkhdrs",
+    srcs = [
+        "meta_parse.c",
+    ],
+    # additional_srcs = [
+    #     "//src/lexer:meta_lexis.c",
+    #     "//src/parser:meta_syntaxis.c",
+    # ],
+)

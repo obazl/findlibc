@@ -1,11 +1,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-/* #if EXPORT_INTERFACE */
+#if EXPORT_INTERFACE
 #include "utarray.h"
 #include "uthash.h"
 #include "utstring.h"
-/* #endif */
+#include "utstrsort.h"
+#endif
 
 #include "log.h"
 
@@ -702,29 +703,3 @@ EXPORT void dispose_flag_table(void)
 /* } */
 
 /* **************************************************************** */
-#if TRACING
-void dump_flags(int indent, obzl_meta_flags *flags)
-{
-    indent++;            /* account for width of log label */
-    /* log_trace("%*sdump_flags", indent, sp); */
-    if (flags == NULL) {
-        log_trace("%*sflags: none", indent, sp);
-        return;
-    } else {
-        if ( flags->list ) {
-            if (utarray_len(flags->list) == 0) {
-                log_trace("%*sflags: none.", indent, sp);
-                return;
-            } else {
-                log_trace("%*sflags ct: %d", indent, sp, utarray_len(flags->list));
-                struct obzl_meta_flag *a_flag = NULL;
-                while ( (a_flag=(struct obzl_meta_flag*)utarray_next(flags->list, a_flag))) {
-                    log_debug("%*s%s (polarity: %d)", delta+indent, sp, a_flag->s, a_flag->polarity);
-                }
-            }
-        } else {
-            log_debug("%*sflags: none", indent, sp);
-        }
-    }
-}
-#endif

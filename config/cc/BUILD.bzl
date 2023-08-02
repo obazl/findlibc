@@ -58,44 +58,16 @@ BASE_DEFINES = select({
     ],
     "//conditions:default":   ["DSO_EXT=\\\".so\\\""]
 }) + select({
-        "//config/s7:debug?": ["S7_DEVBUILD"],
-        "//conditions:default":   []
-}) + select({
-    "//config/profile:dev?": ["DEVBUILD", "TRACING"],
+    "//config/profile:dev?": ["DEVBUILD"],
     "//conditions:default": []
 }) + select({
-    "//config/debug:trace?": ["TRACING"],
+    "//config/trace:tracing?": ["TRACING"],
     "//conditions:default": []
-## FIXME: libs7 config not global
-# }) + select({
-#     "@mustachios_s7//syntax:alt?": ["ALT_SYNTAX"],
-#     "//conditions:default": []
-}) + select({
-    # "@libs7//config/clibs/link:runtime?": ["CLIBS_LINK_RUNTIME"],
-    "//conditions:default":   []
 })
 
-# COPTS = [
-#     "-x", "c",
-#     "-Wall",
-#     "-Wextra",
-#     "-Wno-unused-parameter",
-# ] + select({
-#     "//config/host/build:macos?": [
-#         "-std=c11",
-#         "-Werror=pedantic",
-#         "-Wno-gnu",
-#         "-Wno-format-pedantic",
-#     ],
-#     "//config/host/build:linux?": [
-#         "-std=gnu11",
-#         "-fPIC",
-#         "-Wl,--no-undefined",
-#         # "--pedantic-errors",
-#     ],
-#     "//conditions:default": ["-std=c11"],
-# }) + select({
-#     "//config/clibs/link:shared?": ["-fPIC"],
-#     "//conditions:default": []
-# })
-
+def pkg_include(pkg):
+    if native.repository_name() == "@":
+        return pkg # native.package_name()
+    else:
+        return "external/{}~{}/{}".format(
+            native.module_name(), native.module_version(), pkg) # native.package_name())

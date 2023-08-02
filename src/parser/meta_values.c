@@ -9,7 +9,7 @@
 
 extern const UT_icd ut_str_icd;
 
-#if defined(DEBUG_PROPERTIES) || defined (TRACING)
+#if defined(DEBUG_VALUES) || defined (TRACING)
 extern int indent;
 extern int delta;
 extern char *sp;
@@ -36,6 +36,7 @@ EXPORT obzl_meta_value *obzl_meta_values_nth(obzl_meta_values *_values, unsigned
 
 EXPORT obzl_meta_values *obzl_meta_values_new(char *valstr)
 {
+    TRACE_ENTRY
 #if DEBUG_VALUES
     /* log_trace("obzl_meta_values_new(%s)", valstr); */
 #endif
@@ -44,6 +45,7 @@ EXPORT obzl_meta_values *obzl_meta_values_new(char *valstr)
     if (valstr != NULL)
         utarray_push_back(new_values->list, &valstr);
     /* dump_values(0, new_values); */
+    TRACE_EXIT
     return new_values;
 }
 
@@ -79,25 +81,3 @@ EXPORT obzl_meta_values *obzl_meta_values_new_tokenized(char *valstr)
     }
     return new_values;
 }
-
-/* **************************************************************** */
-#if TRACING
-EXPORT void dump_values(int indent, obzl_meta_values *values)
-{
-    /* log_trace("dump_values %p", values); */
-    indent++;            /* account for width of log label */
-    if ( values->list ) {
-        if (utarray_len(values->list) == 0) {
-            log_debug("%*svalues: none", indent, sp);
-        } else {
-            char **a_value = NULL;
-            log_trace("%*svalues:", indent, sp);
-            while ( (a_value=(char **)utarray_next(values->list, a_value))) {
-                log_trace("%*s'%s'", delta+indent, sp, *a_value);
-            }
-        }
-    } else {
-        log_debug("%*svalues: none", indent, sp);
-    }
-}
-#endif

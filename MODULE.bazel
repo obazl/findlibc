@@ -33,6 +33,7 @@ UTHASH_VERSION = "2.3.0"
 
 bazel_dep(name = "gopt", version = GOPT_VERSION)
 bazel_dep(name = "lemon", version = LEMON_VERSION)
+
 bazel_dep(name = "makeheaders", version = MAKEHEADERS_VERSION)
 bazel_dep(name = "re2c", version = RE2C_VERSION)
 bazel_dep(name = "uthash", version = UTHASH_VERSION)

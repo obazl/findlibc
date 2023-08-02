@@ -1,6 +1,5 @@
 load("@bazel_skylib//rules:common_settings.bzl",
-     "bool_flag", "string_flag")
-# load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+     "bool_flag", "string_flag", "string_setting")
 
 load("@makeheaders//src:BUILD.bzl", "makeheaders")
 load("@lemon//src:BUILD.bzl", "lemon")
@@ -10,13 +9,12 @@ load("//:BUILD.bzl",
      "LIBLOG_CC_VERSION",
      "UTHASH_VERSION")
 load("//config/cc:BUILD.bzl",
-     "BASE_COPTS",
-     "BASE_DEFINES")
+     COPTS   = "BASE_COPTS",
+     DEFINES = "BASE_DEFINES",
+     "pkg_include")
 
-COPTS = BASE_COPTS
-DEFINES = BASE_DEFINES # + ["TRACING"]
+PKG_INCLUDE = pkg_include(package_name())
 
-csrcs = glob(["*.c"])
 exports_files(
     glob(
         ["*.c"],
@@ -25,50 +23,53 @@ exports_files(
     )
 )
 
+# string_setting(name = "repo", build_setting_default = repository_name())
+# config_setting(name = "local?", flag_values = {":repo": "@"})
+
+# PKG_INCLUDE = select({
+#     ":local?":  ["-I$(GENDIR)/{}".format(package_name())],
+#     "//conditions:default": ["-I$(GENDIR)/external/{}~{}/{}".format(module_name(), module_version(), package_name())]
+# })
+
 ################################################################
 cc_library(
     name = "meta_parser",
     # alwayslink = True,
     srcs = [
         "meta_parser.c",
+        "meta_entries.c",
+        "meta_flags.c",
+        "meta_packages.c",
+        "meta_properties.c",
+        "meta_settings.c",
+        "meta_values.c",
+        # "utils.c",
+
+        ":meta_syntaxis",
+
         ":mkhdrs",
-        # "meta_parser.h",
     ],
     deps = [
         "@liblog_cc//src:logc",
         "@uthash//src:uthash",
         "//src/lexer:meta_lexer",
-        ":meta_syntaxis"
     ],
     copts = COPTS + [
-        "-Wno-unused-parameter",
-        "-Wno-unused-variable",
-        "-Wno-visibility",
-
-        ## NOTE: generated meta_syntaxis.c includes header with full
-        ## bazel path, e.g.
-        ## #include "bazel-out/darwin-fastbuild/bin/external/mibl/src/findlib/meta_syntaxis.h"
-        ## so we always need '-I .'
-        "-I.",
-        "-Isrc",
-
-        "-I$(GENDIR)/src/parser",
-        "-I$(GENDIR)/external/libfindlib~{}/src/parser".format(
-            LIBFINDLIB_VERSION),
-
+        # load("@liblog_cc//:BUILD.bzl", log_pkg_include = "pkg_include")
+        # "-I{}".format(log_pkg_include("src")),
         "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
-
         "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
-        # "-Ivendored/uthash",
-        # "-Iexternal/mibl/vendored/uthash",
+        "-I$(GENDIR)/{}".format(PKG_INCLUDE),
     ],
     defines = DEFINES + select({
-        ":yydebug?": ["YYDEBUG", "TRACING"],
-        "//conditions:default":   []
+        ":yydebug?": ["YYDEBUG"], "//conditions:default":   []
     }) + select({
-        ":yytrace?": ["YYTRACE"],
-        "//conditions:default":   []
+        ":yytrace?": ["YYTRACE"], "//conditions:default":   []
     }),
+    ## other macros used in meta_*.c files:
+    # DEBUG_ENTRIES, DEBUG_FLAGS, DEBUG_PACKAGES
+    # DEBUG_PROPERTIES, DEBUG_SETTINGS, DEBUG_VALUES
+    # DEBUG_LEX
     visibility = [
         "//src:__pkg__",
         "//test:__subpackages__"
@@ -78,21 +79,13 @@ cc_library(
 ###########
 cc_library(
     name = "meta_syntaxis",
-    # alwayslink = True,
+    alwayslink = True,
     srcs = [
         "meta_syntaxis.c",
-
-        "meta_entries.c",
-        "meta_flags.c",
-        "meta_packages.c",
-        "meta_properties.c",
-        "meta_settings.c",
-        "meta_values.c",
-        "utils.c",
         ":mkhdrs",
     ] + select({
         "//config/profile:dev?": [
-            "debug_meta.c", # "debug_meta.h"
+            "meta_debugging.c",
         ],
         "//conditions:default": []
     }),
@@ -104,24 +97,22 @@ cc_library(
         "-Wno-unused-parameter",
         "-Wno-unused-variable",
         "-Wno-visibility",
-
-        ## NOTE: generated meta_syntaxis.c includes header with full
-        ## bazel path, e.g.
-        ## #include "bazel-out/darwin-fastbuild/bin/external/mibl/src/findlib/meta_syntaxis.h"
-        ## so we always need '-I .'
-        "-I.",
-        "-Isrc",
-
-        "-I$(GENDIR)/src/parser",
-        "-I$(GENDIR)/external/libfindlib~{}/src/parser".format(
-            LIBFINDLIB_VERSION),
-
         "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
-
         "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
-        # "-Ivendored/uthash",
-        # "-Iexternal/mibl/vendored/uthash",
-    ],
+
+        ## NOTE: generated meta_syntaxis.c includes header with
+        ## full bazel path, e.g.
+        ## #include "bazel-out/darwin_arm64-fastbuild/bin/<segs>/src/parser/meta_syntaxis.h"
+        ## where <segs> will be null (if building w/in libfindlib repo)
+        ## or external/libfindlib~<version> if building as an external repo
+        ## so we always nee this:
+        "-I.",
+
+        ## for mkhdrs output:
+        # "-I$(GENDIR)/src/parser",
+        # "-I$(GENDIR)/external/libfindlib~{}/src/parser".format(LIBFINDLIB_VERSION),
+        "-I$(GENDIR)/{}".format(PKG_INCLUDE),
+    ], # + PKG_INCLUDE,
     defines = DEFINES + select({
         ":yydebug?": ["YYDEBUG", "TRACING"],
         "//conditions:default":   []
@@ -162,16 +153,20 @@ makeheaders(
         "meta_properties.c",
         "meta_settings.c",
         "meta_values.c",
-        "utils.c",
-        # "debug_meta.c"
+        # "utils.c",
     ] + select({
-        "//config/profile:dev?": ["debug_meta.c"],
+        "//config/profile:dev?": ["meta_debugging.c"],
         "//conditions:default": []
     }),
     additional_srcs = [
         # no header outputs for these
         "//src/lexer:meta_lexis.c",
-    ],
+    ] + select({
+        "//config/profile:dev?": [
+            "//src:ansi_colors.h", "//src:tracing_enabled.h"
+        ],
+        "//conditions:default": ["//src:tracing_disabled.h"]
+    }),
 )
 
 ################################################################

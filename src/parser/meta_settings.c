@@ -10,7 +10,7 @@
 
 #include "meta_settings.h"
 
-#if defined(DEBUG_PROPERTIES) || defined (TRACING)
+#if defined(DEBUG_SETTINGS) || defined (TRACING)
 extern int indent;
 extern int delta;
 extern char *sp;
@@ -110,6 +110,7 @@ struct obzl_meta_setting *obzl_meta_setting_new(char *flags,
                                                 enum obzl_meta_opcode_e opcode,
                                                 obzl_meta_values *values)
 {
+    TRACE_ENTRY
 #if DEBUG_SETTINGS
     /* log_trace("obzl_meta_setting_new()"); //, flags: %s", flags); */
 #endif
@@ -124,6 +125,7 @@ struct obzl_meta_setting *obzl_meta_setting_new(char *flags,
     log_trace("obzl_meta_setting_new done; dumping:");
     dump_setting(0, new_setting);
 #endif
+    TRACE_EXIT
     return new_setting;
 }
 
@@ -188,25 +190,3 @@ void obzl_meta_settings_dtor(void *_elt) {
     }
     free(elt);
 }
-
-#if defined(TRACING)
-EXPORT void dump_setting(int indent, struct obzl_meta_setting *setting)
-{
-    log_trace("%*ssetting:", indent, sp);
-    dump_flags(2*delta+indent, setting->flags);
-    log_debug("%*sopcode: %d", delta+indent, sp, setting->opcode);
-    dump_values(2*delta+indent, setting->values);
-    /* log_trace("%*sdump_setting() finished", indent, sp); */
-}
-
-EXPORT void dump_settings(int indent, obzl_meta_settings *settings)
-{
-    log_trace("%*ssettings:", indent, sp);
-    obzl_meta_setting *setting = NULL;
-    for(setting  = utarray_front(settings->list);
-        setting != NULL;
-        setting  = utarray_next(settings->list, setting)) {
-        dump_setting(delta+indent, setting);
-    }
-}
-#endif

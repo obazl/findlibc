@@ -16,6 +16,7 @@ test:show --keep_going
 
 common:showdev --config=show
 common:showdev --//config/profile=dev
+common:showdev --//config/trace
 common:showdev --compilation_mode=fastbuild
 test:showdev --test_output=all
 test:showdev --keep_going

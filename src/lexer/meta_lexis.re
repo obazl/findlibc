@@ -62,7 +62,7 @@ static void mtag(int t)
 #define YYMTAGP(t) mtag(YYCURSOR)
 #define YYMTAGN(t) mtag(NULL)
 
-int get_next_meta_token(struct meta_lexer_s *lexer, union meta_token *mtok)
+EXPORT int get_next_meta_token(struct meta_lexer_s *lexer, union meta_token *mtok)
 {
     /* const char *YYMARKER; */
 

@@ -1,45 +1,59 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-load("//:BUILD.bzl", "LIBLOG_CC_VERSION", "UTHASH_VERSION")
+load("@makeheaders//src:BUILD.bzl", "makeheaders")
+
+load("//:BUILD.bzl",
+     "LIBFINDLIB_VERSION",
+     "LIBLOG_CC_VERSION",
+     "UTHASH_VERSION")
 load("//config/cc:BUILD.bzl",
      COPTS = "BASE_COPTS",
      DEFINES = "BASE_DEFINES")
 
 ################################################################
 cc_binary(
-    name  = "lex_test",
-    linkstatic = 1,
-    srcs  = [
-        "lex_test.c",
-        "lex_test.h",
-    ],
-    copts = COPTS + [
-        "-I$(GENDIR)/src",
-        "-I$(GENDIR)/test",
-        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
-        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION)
-    ],
-    local_defines = DEFINES, # ["DEBUG", "DEBUG_LEX"],
-    deps = [
-        "@liblog_cc//src:logc",
-        "@uthash//src:uthash",
-        "//src/lexer:meta_lexer"
-    ],
-)
-
-##########
-cc_binary(
     name  = "parse_test",
     linkstatic = 1,
     srcs  = [
         "parse_test.c",
-        "parse_test.h",
+        ":mkhdrs"
     ],
     deps = [
         "@liblog_cc//src:logc",
         "@uthash//src:uthash",
         "//src:findlib",
-        # "//src/parser:meta_parser"
+    ],
+    copts = COPTS + [
+        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
+        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test",
+        # these allow this test target to be built as
+        # an external resource (which we do not support):
+        # "-I$(GENDIR)/external/libfindlib~{}/src".format(
+        #     LIBFINDLIB_VERSION),
+        # "-I$(GENDIR)/external/libfindlib~{}/test".format(
+        #     LIBFINDLIB_VERSION),
+    ],
+    local_defines = DEFINES
+)
+
+##########
+# WARNING: lexer's API not exposed in findlib.h
+# so we depend on lexer directly, not libfindlib,
+# which means too that mkhdrs does same
+cc_binary(
+    name  = "lex_test",
+    linkstatic = 1,
+    srcs  = [
+        "lex_test.c",
+        ":mkhdrs",
+    ],
+    deps = [
+        "@liblog_cc//src:logc",
+        "@uthash//src:uthash",
+        "//src/lexer:meta_lexer",
+        # "//src:findlib",
     ],
     copts = COPTS + [
         "-I$(GENDIR)/src",
@@ -47,7 +61,29 @@ cc_binary(
         "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
         "-Iexternal/uthash~{}/src".format(UTHASH_VERSION)
     ],
-    local_defines = DEFINES # ["DEBUG"] # , "TRACING"],
+    local_defines = DEFINES,
+)
+
+##########
+cc_binary(
+    name  = "crawler_test",
+    linkstatic = 1,
+    srcs  = [
+        "crawler_test.c",
+        ":mkhdrs"
+    ],
+    deps = [
+        "@liblog_cc//src:logc",
+        "@uthash//src:uthash",
+        "//src:findlib"
+    ],
+    copts = COPTS + [
+        "-I$(GENDIR)/src",
+        "-I$(GENDIR)/test",
+        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
+        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION)
+    ],
+    local_defines = DEFINES,
 )
 
 ################################################################
@@ -86,28 +122,15 @@ cc_binary(
 # )
 
 ################################################################
-genrule(
+makeheaders(
     name = "mkhdrs",
-    outs = ["lex_test.h", "parse_test.h"],
     srcs = [
-        "lex_test.c", "parse_test.c",
+        "crawler_test.c",
+        "lex_test.c",
+        "parse_test.c",
+    ],
+    additional_srcs = [
         "//src/lexer:meta_lexis.c",
         "//src/parser:meta_syntaxis.c",
-        "//src/parser:meta_parser.c",
-        "//src/parser:debug_meta.c"
     ],
-    cmd = "\n".join([
-        "SRC1=$(location lex_test.c)",
-        "SRCDIR1=`dirname $$SRC1`",
-        "$(execpath @makeheaders//src:makeheaders) \\",
-        "    $(location //src/lexer:meta_lexis.c) \\",
-        "    $(location //src/parser:meta_syntaxis.c) \\",
-        "    $(location //src/parser:meta_parser.c) \\",
-        "    $(location //src/parser:debug_meta.c) \\",
-        "    $(location lex_test.c) \\",
-        "    $(location parse_test.c)",
-        "cp $${SRCDIR1}/*.h $(@D)",
-    ]),
-    tools = ["@makeheaders//src:makeheaders"],
-    visibility = ["//visibility:public"]
 )

@@ -3,6 +3,7 @@
 #include "log.h"
 #include "utarray.h"
 #include "utstring.h"
+#include "utstrsort.h"
 
 #include "meta_packages.h"
 
@@ -70,6 +71,7 @@ EXPORT int obzl_meta_package_subpkg_count(obzl_meta_package *_pkg)
 /* **************************************************************** */
 EXPORT bool obzl_meta_package_has_archives(obzl_meta_package *_pkg)
 {
+    TRACE_ENTRY
     //FIXME: use a has_archives flag
 
     /* obzl_meta_entries *entries = _pkg->entries; */
@@ -126,6 +128,7 @@ EXPORT bool obzl_meta_package_has_subpackages(obzl_meta_package *_pkg)
 
 EXPORT obzl_meta_property *obzl_meta_package_property(obzl_meta_package *_pkg, char *_name)
 {
+    TRACE_ENTRY
 #if DEBUG_PACKAGES
     log_trace("obzl_meta_package_property('%s')", _name);
 #endif
@@ -147,6 +150,7 @@ EXPORT obzl_meta_values *resolve_setting_values(obzl_meta_setting *_setting,
                                          obzl_meta_flags *_flags,
                                          obzl_meta_settings *_settings)
 {
+    TRACE_ENTRY
 #if defined(TRACING)
     if (mibl_trace)
         log_debug("resolve_setting_values, opcode: %d", _setting->opcode);
@@ -216,6 +220,7 @@ EXPORT int pkg_deps(struct obzl_meta_package *_pkg,
                     UT_array *pending_deps,
                     UT_array *completed_deps)
 {
+    TRACE_ENTRY
 /* #if defined(TRACING) */
 /*     if (mibl_trace) log_trace("pkg_deps"); */
 /* #endif */

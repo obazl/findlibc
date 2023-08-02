@@ -5,12 +5,8 @@ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 bool_flag(name = "debug", build_setting_default = 0)
 config_setting(name = "debug?", flag_values = {":debug": "True"})
 
-bool_flag(name = "stacktrace", build_setting_default = 0)
-config_setting(name = "stacktrace?", flag_values = {":stacktrace": "True"})
-
-bool_flag(name = "trace", build_setting_default = 0)
-config_setting(name = "trace?", flag_values = {":trace": "True"})
-
+## FIXME: should be based on compiler, not os,
+## e.g. clang_debug v. gcc_debug
 config_setting(
     name = "linux?",
     constraint_values = ["@platforms//os:linux"],
@@ -19,7 +15,6 @@ config_setting(
     },
 )
 
-## FIXME: should be based on compiler, not os, e.g. clang_debug v. gcc_debug
 ##  @local_config_cc//:cc-compiler-darwin_x86_64
 config_setting(
     name = "macos?",
