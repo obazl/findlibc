@@ -1,19 +1,14 @@
 load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag", "string_setting")
 
-load("@makeheaders//src:BUILD.bzl", "makeheaders")
+load("@makeheaders//src:RULES.bzl", "makeheaders")
 load("@lemon//src:BUILD.bzl", "lemon")
 
-load("//:BUILD.bzl",
-     "LIBFINDLIB_VERSION",
-     "LIBLOG_CC_VERSION",
-     "UTHASH_VERSION")
-load("//config/cc:BUILD.bzl",
+load("//config/cc:CONFIG.bzl",
      COPTS   = "BASE_COPTS",
-     DEFINES = "BASE_DEFINES",
-     "pkg_include")
+     DEFINES = "BASE_DEFINES")
 
-PKG_INCLUDE = pkg_include(package_name())
+TOOLCHAINS = ["//:repo_paths"]
 
 exports_files(
     glob(
@@ -22,14 +17,6 @@ exports_files(
         exclude = ["meta_syntaxis.c"]
     )
 )
-
-# string_setting(name = "repo", build_setting_default = repository_name())
-# config_setting(name = "local?", flag_values = {":repo": "@"})
-
-# PKG_INCLUDE = select({
-#     ":local?":  ["-I$(GENDIR)/{}".format(package_name())],
-#     "//conditions:default": ["-I$(GENDIR)/external/{}~{}/{}".format(module_name(), module_version(), package_name())]
-# })
 
 ################################################################
 cc_library(
@@ -43,23 +30,18 @@ cc_library(
         "meta_properties.c",
         "meta_settings.c",
         "meta_values.c",
-        # "utils.c",
-
         ":meta_syntaxis",
-
         ":mkhdrs",
     ],
     deps = [
-        "@liblog_cc//src:logc",
+        "@liblogc//src:logc",
         "@uthash//src:uthash",
         "//src/lexer:meta_lexer",
     ],
     copts = COPTS + [
-        # load("@liblog_cc//:BUILD.bzl", log_pkg_include = "pkg_include")
-        # "-I{}".format(log_pkg_include("src")),
-        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
-        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
-        "-I$(GENDIR)/{}".format(PKG_INCLUDE),
+        "-I$(@liblogc)/src",
+        "-I$(@uthash)/src",
+        "-I$(GENDIR)/$(@)/src/parser",
     ],
     defines = DEFINES + select({
         ":yydebug?": ["YYDEBUG"], "//conditions:default":   []
@@ -70,6 +52,7 @@ cc_library(
     # DEBUG_ENTRIES, DEBUG_FLAGS, DEBUG_PACKAGES
     # DEBUG_PROPERTIES, DEBUG_SETTINGS, DEBUG_VALUES
     # DEBUG_LEX
+    toolchains = TOOLCHAINS,
     visibility = [
         "//src:__pkg__",
         "//test:__subpackages__"
@@ -84,35 +67,35 @@ cc_library(
         "meta_syntaxis.c",
         ":mkhdrs",
     ] + select({
-        "//config/profile:dev?": [
+        # "//config/profile:dev?": [
+        "@cc_config//profile:dev?": [
             "meta_debugging.c",
         ],
         "//conditions:default": []
     }),
     deps = [
-        "@liblog_cc//src:logc",
+        "@liblogc//src:logc",
         "@uthash//src:uthash",
     ],
     copts = COPTS + [
         "-Wno-unused-parameter",
         "-Wno-unused-variable",
         "-Wno-visibility",
-        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
-        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
+
+        "-I$(@liblogc)/src",
+        "-I$(@uthash)/src",
 
         ## NOTE: generated meta_syntaxis.c includes header with
         ## full bazel path, e.g.
         ## #include "bazel-out/darwin_arm64-fastbuild/bin/<segs>/src/parser/meta_syntaxis.h"
-        ## where <segs> will be null (if building w/in libfindlib repo)
-        ## or external/libfindlib~<version> if building as an external repo
-        ## so we always nee this:
+        ## where <segs> will be null (if building w/in findlibc repo)
+        ## or external/findlibc~<version> if building as an external repo
+        ## so we always need this:
         "-I.",
 
         ## for mkhdrs output:
-        # "-I$(GENDIR)/src/parser",
-        # "-I$(GENDIR)/external/libfindlib~{}/src/parser".format(LIBFINDLIB_VERSION),
-        "-I$(GENDIR)/{}".format(PKG_INCLUDE),
-    ], # + PKG_INCLUDE,
+        "-I$(GENDIR)/$(@)/src/parser"
+    ],
     defines = DEFINES + select({
         ":yydebug?": ["YYDEBUG", "TRACING"],
         "//conditions:default":   []
@@ -120,6 +103,7 @@ cc_library(
         ":yytrace?": ["YYTRACE"],
         "//conditions:default":   []
     }),
+    toolchains = TOOLCHAINS,
     visibility = ["//test:__subpackages__"]
 )
 
@@ -142,9 +126,10 @@ lemon(
 )
 
 ################################################################
+
 makeheaders(
     name = "mkhdrs",
-    srcs = [
+    hdrs_srcs = [
         "meta_parser.c",
         "meta_syntaxis.c",
         "meta_entries.c",
@@ -155,17 +140,20 @@ makeheaders(
         "meta_values.c",
         # "utils.c",
     ] + select({
-        "//config/profile:dev?": ["meta_debugging.c"],
+        # "//config/profile:dev?": ["meta_debugging.c"],
+        "@cc_config//profile:dev?": ["meta_debugging.c"],
         "//conditions:default": []
     }),
     additional_srcs = [
         # no header outputs for these
         "//src/lexer:meta_lexis.c",
     ] + select({
-        "//config/profile:dev?": [
-            "//src:ansi_colors.h", "//src:tracing_enabled.h"
+        # "//config/profile:dev?": [
+        # "@cc_config//profile:dev?": [
+        "@cc_config//trace:trace?": [
+            "//src:ansi_colors.h", "//src:trace_dev.h"
         ],
-        "//conditions:default": ["//src:tracing_disabled.h"]
+        "//conditions:default": ["//src:trace_prod.h"]
     }),
 )
 

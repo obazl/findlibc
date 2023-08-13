@@ -1,0 +1,23 @@
+################################################################
+# re2c takes a long time to build, so we only run it
+# when meta_lexis.re changes, which is rare.
+genrule(
+    name = "lexis",
+    tools = ["@re2c//:re2c"],
+    outs  = ["meta_lexis.c"],
+    srcs = ["meta_lexis.re"],
+    cmd   = "\n".join([
+        "for f in $(locations @re2c//:re2c)",
+        "do",
+        "    if [ -f $$f ]",
+        "    then",
+        "        if [ re2c = `basename $$f` -a -x $$f ]",
+        "        then",
+        "            break",
+        "        fi",
+        "    fi",
+        "done",
+        "$$f --conditions --tags -o $(@D)/meta_lexis.c $(location meta_lexis.re)",
+    ]),
+    visibility = ["//visibility:public"]
+)

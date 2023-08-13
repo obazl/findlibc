@@ -133,17 +133,17 @@ int main(int argc, char *argv[])
     UT_array *opam_exclude_pkgs;
     utarray_new(opam_exclude_pkgs,&ut_str_icd);
 
-    UT_string *meta_path;
-    utstring_renew(meta_path);
-    utstring_printf(meta_path, "%s/%s/META",
-                    site_lib,
-                    pkg_dir);
+    /* UT_string *meta_path; */
+    /* utstring_renew(meta_path); */
+    /* utstring_printf(meta_path, "%s/%s/META", */
+    /*                 findlib_site_lib, */
+    /*                 pkg_dir); */
 
 
-    struct obzl_meta_package *pkg
-        = obzl_meta_parse_file(utstring_body(meta_path));
+    /* struct obzl_meta_package *pkg */
+    /*     = obzl_meta_parse_file(utstring_body(meta_path)); */
 
     utstring_free(findlib_site_lib);
     utstring_free(meta_path);
-    log_info("crawler_test exiting");
+    log_info("meta_parse.c exiting");
 }

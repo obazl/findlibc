@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
     }
 
     if (utstring_len(meta_file) == 0) {
-        log_error("-- -f /path/to/file.opam must be provided.");
+        log_error("-- -f /path/to/META.file must be provided.");
         exit(EXIT_FAILURE);
     }
 
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
         /* emitted_bootstrapper = false; */
     } else {
 #if defined(TRACING)
-        log_warn("PARSED %s", utstring_body(meta_file));
+        log_info("PARSED %s", utstring_body(meta_file));
         DUMP_PKG(0, pkg);
 
         /* if (mibl_debug_findlib) */
@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
         utstring_printf(imports_path, "%s",
                         obzl_meta_package_name(pkg));
         log_debug("imports_path: %s", utstring_body(imports_path));
-        log_debug("emitting for pkg: %s", pkg->name);
+        /* log_debug("emitting for pkg: %s", pkg->name); */
         /* dump_package(0, pkg); */
         /* fflush(bootstrap_FILE); */
 

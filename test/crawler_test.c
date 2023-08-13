@@ -24,14 +24,56 @@
 
 #include "log.h"
 
+bool debug;
 bool verbose;
 int  verbosity;
 
 UT_string *meta_path;
 
+void print_usage(char *test);
+void set_options(char *test, struct option options[]);
+void initialize(char *test, int argc, char **argv);
+
+enum OPTS {
+    FLAG_HELP,
+    FLAG_DEBUG,
+    FLAG_DEBUG_CONFIG,
+    FLAG_DEBUG_SCM,
+    FLAG_DEBUG_SCM_LOADS,
+
+    FLAG_SHOW_CONFIG,
+    FLAG_TRACE,
+    FLAG_VERBOSE,
+
+    LAST
+};
+
+struct option options[] = {
+    /* 0 */
+    [FLAG_DEBUG] = {.long_name="debug",.short_name='d',
+                    .flags=GOPT_ARGUMENT_FORBIDDEN | GOPT_REPEATABLE},
+    [FLAG_DEBUG_CONFIG] = {.long_name="debug-config",
+                           .flags=GOPT_ARGUMENT_FORBIDDEN},
+    [FLAG_DEBUG_SCM] = {.long_name="debug-scm", .short_name = 'D',
+                        .flags=GOPT_ARGUMENT_FORBIDDEN},
+    [FLAG_DEBUG_SCM_LOADS] = {.long_name="debug-scm-loads",
+                              .flags=GOPT_ARGUMENT_FORBIDDEN},
+    [FLAG_SHOW_CONFIG] = {.long_name="show-config",
+                          .flags=GOPT_ARGUMENT_FORBIDDEN},
+    [FLAG_TRACE] = {.long_name="trace",.short_name='t',
+                    .flags=GOPT_ARGUMENT_FORBIDDEN},
+    [FLAG_VERBOSE] = {.long_name="verbose",.short_name='v',
+                      .flags=GOPT_ARGUMENT_FORBIDDEN | GOPT_REPEATABLE},
+    [FLAG_HELP] = {.long_name="help",.short_name='h',
+                   .flags=GOPT_ARGUMENT_FORBIDDEN},
+    [LAST] = {.flags = GOPT_LAST}
+};
+
+/* **************** **************** */
 void pkg_handler(char *site_lib, char *pkg_dir)
 {
-    log_debug("pkg_handler: %s", pkg_dir);
+    if (verbose)
+        log_debug("pkg_handler: %s", pkg_dir);
     /* log_debug("site-lib: %s", utstring_body(site_lib)); */
 
     utstring_renew(meta_path);
@@ -39,8 +81,8 @@ void pkg_handler(char *site_lib, char *pkg_dir)
                     site_lib,
                     pkg_dir);
                     /* utstring_body(opam_switch_lib), pkg_name); */
-
-    log_info("meta_path: %s", utstring_body(meta_path));
+    if (verbose)
+        log_info("meta_path: %s", utstring_body(meta_path));
 
     errno = 0;
     if ( access(utstring_body(meta_path), F_OK) == 0 ) {
@@ -64,8 +106,8 @@ void pkg_handler(char *site_lib, char *pkg_dir)
                     log_error("Error parsing %s", utstring_body(meta_path));
             /* emitted_bootstrapper = false; */
         } else {
-#if defined(TRACING)
-            /* if (mibl_debug) */
+#if defined(DEVBUILD)
+            if (verbose)
                 log_info("PARSED %s", utstring_body(meta_path));
             /* if (mibl_debug_findlib) */
                 /* DUMP_PKG(0, pkg); */
@@ -98,8 +140,14 @@ int main(int argc, char *argv[])
 
     char *homedir = getenv("HOME");
 
-    while ((opt = getopt(argc, argv, "s:hv")) != -1) {
+    while ((opt = getopt(argc, argv, "ds:hv")) != -1) {
         switch (opt) {
+        case 'd':
+            debug = true;
+            break;
+        case 'v':
+            verbose = true;
+            break;
         case 's':
             /* BUILD.bazel or BUILD file */
             opam_switch = optarg;

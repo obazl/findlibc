@@ -1,14 +1,13 @@
-load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@makeheaders//src:RULES.bzl", "makeheaders")
 
-load("@makeheaders//src:BUILD.bzl", "makeheaders")
-
-load("//:BUILD.bzl",
-     "LIBFINDLIB_VERSION",
-     "LIBLOG_CC_VERSION",
-     "UTHASH_VERSION")
-load("//config/cc:BUILD.bzl",
-     COPTS = "BASE_COPTS",
+load("//config/cc:CONFIG.bzl",
+     "BASE_DEPS",
+     "BASE_COPTS",
+     INCLUDE_PATHS = "BASE_INCLUDE_PATHS",
      DEFINES = "BASE_DEFINES")
+
+COPTS = BASE_COPTS + INCLUDE_PATHS
+TOOLCHAINS = ["//:test_repo_paths"]
 
 ##########
 cc_binary(
@@ -18,24 +17,29 @@ cc_binary(
         "meta_parse.c",
         ":mkhdrs"
     ],
-    copts = COPTS + [
-        "-I$(GENDIR)/src",
-        "-I$(GENDIR)/test/app",
-        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
-        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION)
-    ],
-    local_defines = DEFINES,
-    deps = [
-        "@liblog_cc//src:logc",
+    deps = BASE_DEPS + [
+        # "@liblogc//src:logc",
         "@uthash//src:uthash",
         "//src:findlib"
     ],
+    copts = COPTS + [
+        "-I$(@uthash)/src",
+        "-I$(GENDIR)/$(@)/src",
+        "-I$(GENDIR)/$(@)/test/app"
+
+        # "-I$(GENDIR)/src",
+        # "-I$(GENDIR)/test/app",
+        # "-Iexternal/liblogc~{}/src".format(LIBLOGC_VERSION),
+        # "-Iexternal/uthash~{}/src".format(UTHASH_VERSION)
+    ],
+    local_defines = DEFINES,
+    toolchains = TOOLCHAINS,
 )
 
 ############
 makeheaders(
     name = "mkhdrs",
-    srcs = [
+    hdrs_srcs = [
         "meta_parse.c",
     ],
     # additional_srcs = [

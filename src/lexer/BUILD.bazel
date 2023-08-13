@@ -1,27 +1,24 @@
 load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag")
-# load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
-load("@makeheaders//src:BUILD.bzl", "makeheaders")
+load("@makeheaders//src:RULES.bzl", "makeheaders")
 load("@lemon//src:BUILD.bzl", "lemon")
 
-load("//:BUILD.bzl",
-     "LIBFINDLIB_VERSION",
-     "LIBLOG_CC_VERSION",
-     "UTHASH_VERSION")
-load("//config/cc:BUILD.bzl",
+load("//config/cc:CONFIG.bzl",
      "BASE_COPTS",
      "BASE_DEFINES")
 
 COPTS = BASE_COPTS
 DEFINES = BASE_DEFINES
 
+TOOLCHAINS = ["//:repo_paths"]
+
 exports_files(glob(["meta_lexis.c"]))
 
 ################################################################
 cc_library(
     name = "meta_lexer",
-    # alwayslink = True,
+    linkstatic = True,
     srcs = [
         "meta_lexis.c",
         ":mkhdrs"
@@ -32,144 +29,35 @@ cc_library(
             "//src/linux:strnstr.c"
         ],
         "//conditions:default":   []
-    # }) + select({
-    #     "//config/compilation_mode:dbg?": [
-    #         "//src:debug.c", "//src/hdrs:debug.h",
-    #         "debug_meta.c", "//src/hdrs:debug_meta.h",
-    #         "debug_findlib.c", "//src/hdrs:debug_findlib.h"
-    #     ],
-    #     "//conditions:default": []
     }),
-    # hdrs = [
-    #     "findlib.h",
-    #     # "log.h",
-    # ],
     deps = [
-        "@liblog_cc//src:logc",
+        "@liblogc//src:logc",
         "@uthash//src:uthash",
     ],
-    # ] + select({
-    #     "//config/compilation_mode:dbg?": [
-    #         "//src/debug"
-    #     ],
-    #     "//config/profile:dev?": [
-    #         "//src/debug"
-    #     ],
-    #     "//conditions:default": []
-    # }),
     copts = COPTS + [
-        "-Isrc",
-        "-I$(GENDIR)/src/lexer",
-        "-I$(GENDIR)/external/libfindlib~{}/src/lexer".format(
-            LIBFINDLIB_VERSION),
-        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
-        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
-    ] + select({
-        "//config/compilation_mode:dbg?": [
-            "-Isrc/debug"
-        ],
-        "//config/profile:dev?": [
-            "-Isrc/debug"
-        ],
-        "//conditions:default": []
-    }),
-    local_defines = DEFINES + select({
-        "//config/profile:dev?": ["DEVBUILD"],
-        "//conditions:default":   []
-    }) + select({
-        "//config/trace:tracing?": ["TRACING"],
-        "//conditions:default":   []
-    }),
-    # data  = [
-    #     "//coswitch/templates:ocaml_bigarray.BUILD",
-    #     "//coswitch/templates:ocaml_c_api.BUILD",
-    #     "//coswitch/templates:ocaml_compiler-libs.BUILD",
-    #     "//coswitch/templates/compiler_libs:bytecomp.BUILD",
-    #     "//coswitch/templates/compiler_libs:common.BUILD",
-    #     "//coswitch/templates/compiler_libs:optcomp.BUILD",
-    #     "//coswitch/templates/compiler_libs:toplevel.BUILD",
-    #     "//coswitch/templates/compiler_libs:native_toplevel.BUILD",
-    #     "//coswitch/templates:ocaml_dynlink.BUILD",
-    #     "//coswitch/templates:ocaml_num.BUILD",
-    #     "//coswitch/templates:ocaml_ocamldoc.BUILD",
-    #     "//coswitch/templates:ocaml_runtime.BUILD",
-    #     "//coswitch/templates:ocaml_stdlib.BUILD",
-    #     "//coswitch/templates:ocaml_str.BUILD",
-
-    #     "//coswitch/templates/platforms:BUILD.bazel",
-    #     "//coswitch/templates/platforms/build:BUILD.bazel",
-    #     "//coswitch/templates/platforms/target:BUILD.bazel",
-
-    #     "//coswitch/templates:toolchain/adapters/local.BUILD",
-    #     "//coswitch/templates:toolchain/adapters/local.BUILD.mustache",
-    #     "//coswitch/templates:toolchain/adapters/linux/x86_64.BUILD",
-    #     "//coswitch/templates:toolchain/adapters/linux/arm.BUILD",
-    #     "//coswitch/templates:toolchain/adapters/macos/x86_64.BUILD",
-    #     "//coswitch/templates:toolchain/adapters/macos/arm.BUILD",
-    #     "//coswitch/templates:toolchain/profiles/profiles.BUILD",
-    #     "//coswitch/templates:toolchain/selectors/local.BUILD",
-    #     "//coswitch/templates:toolchain/selectors/linux/x86_64.BUILD",
-    #     "//coswitch/templates:toolchain/selectors/linux/arm.BUILD",
-    #     "//coswitch/templates:toolchain/selectors/macos/arm.BUILD",
-    #     "//coswitch/templates:toolchain/selectors/macos/x86_64.BUILD",
-    #     # "//coswitch/templates/host/bazel:BUILD.bazel",
-    #     # "//coswitch/templates/host/build:BUILD.bazel",
-    #     # "//coswitch/templates/host/target:BUILD.bazel",
-    #     "//coswitch/templates:ocaml_threads.BUILD",
-    #     "//coswitch/templates:ocaml_unix.BUILD",
-    # ],
-    # ] + select({
-    #     "//config/compilation_mode:dbg?": ["//src:debug"],
-    #     "//conditions:default": []
-    # }),
+        "-I$(GENDIR)/$(@)/src/lexer",
+    ],
+    local_defines = DEFINES,
+    toolchains = TOOLCHAINS,
     visibility = [
         "//src:__subpackages__",
         "//test:__pkg__"
     ]
 )
 
-################################################################
-# re2c takes a long time to build, so we only run it
-# when meta_lexis.re changes, which is rare.
-# to regenerate meta_lexis.c: delete src/lexer/meta_lexis.c
-# and uncomment this target. Once the new version is copacetic,
-# copy it into the src tree and comment this out.
-# genrule(
-#     name = "gen_meta_lexis",
-#     tools = ["@re2c//:re2c"],
-#     outs  = ["meta_lexis.c"],
-#     srcs = ["meta_lexis.re"],
-#     cmd   = "\n".join([
-#         "for f in $(locations @re2c//:re2c)",
-#         "do",
-#         "    if [ -f $$f ]",
-#         "    then",
-#         "        if [ re2c = `basename $$f` -a -x $$f ]",
-#         "        then",
-#         "            break",
-#         "        fi",
-#         "    fi",
-#         "done",
-#         "$$f --conditions --tags -o $(@D)/meta_lexis.c $(location meta_lexis.re)",
-#     ]),
-#     visibility = ["//visibility:public"]
-# )
-
 ########
 makeheaders(
     name = "mkhdrs",
-    srcs = ["meta_lexis.c"],
-    additional_srcs = ["//src/parser:meta_syntaxis.c"],
-    # outs = ["meta_lexis.h"],
-    # cmd = " ".join([
-    #     "SRC1=$(location meta_lexis.c);",
-    #     "SRCDIR1=`dirname $$SRC1`;",
-    #     "$(execpath @makeheaders//src:makeheaders)",
-    #     "$(location //src/parser:meta_syntaxis.c):",
-    #     "$(location meta_lexis.c);",
-    #     # "cp $${SRCDIR1}/*.h $(@D)",
-    # ]),
-    # tools = ["@makeheaders//src:makeheaders"],
+    hdrs_srcs = ["meta_lexis.c"],
+    additional_srcs = [
+        "//src/parser:meta_syntaxis.c"
+    ] + select({
+        # "//config/profile:dev?": [
+        "@cc_config//profile:dev?": [
+            "//src:ansi_colors.h", "//src:trace_dev.h"
+        ],
+        "//conditions:default": ["//src:trace_prod.h"]
+    }),
     visibility = ["//visibility:public"]
 )
 

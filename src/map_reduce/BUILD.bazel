@@ -2,17 +2,13 @@ load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag")
 # load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
-load("@makeheaders//src:BUILD.bzl", "makeheaders")
+load("@makeheaders//src:RULES.bzl", "makeheaders")
 
-load("//:BUILD.bzl",
-     "DUNE_S7_VERSION",
-     "LIBS7_VERSION",
-     "LIBFINDLIB_VERSION",
-     "LIBLOG_CC_VERSION",
-     "UTHASH_VERSION")
-load("//config/cc:BUILD.bzl",
+load("//config/cc:CONFIG.bzl",
      COPTS = "BASE_COPTS",
      DEFINES = "BASE_DEFINES")
+
+TOOLCHAINS = ["//:repo_paths"]
 
 # for mkhdr findlib.h
 exports_files(["findlib_map_reduce.c"])
@@ -21,30 +17,27 @@ cc_library(
     name = "findlib_map_reduce",
     srcs = [
         "findlib_map_reduce.c",
-        # "//src:utils.c",
         ":mkhdrs"
     ],
     deps = [
-        # "//src:findlib",
-        "@liblog_cc//src:logc",
+        "@liblogc//src:logc",
         "@uthash//src:uthash",
     ],
     copts = COPTS + [
-        "-I$(GENDIR)/src/map_reduce",
-        "-I$(GENDIR)/external/libfindlib~{}/src/map_reduce".format(
-            LIBFINDLIB_VERSION),
-        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
-        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
+        "-I$(GENDIR)/$(@)/src/map_reduce",
+        "-I$(@liblogc)/src",
+        "-I$(@uthash)/src"
     ],
     local_defines = DEFINES,
+    toolchains = TOOLCHAINS,
     visibility = ["//visibility:public"]
 )
 
 makeheaders(
     name = "mkhdrs",
-    srcs = [
+    hdrs_srcs = [
         "findlib_map_reduce.c",
         # "//src:utils.c"
     ],
-    additional_srcs = ["//config:ansi_colors.h"]
+    additional_srcs = ["//src:ansi_colors.h"]
 )

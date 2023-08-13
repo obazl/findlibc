@@ -1,41 +1,34 @@
-load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@makeheaders//src:RULES.bzl", "makeheaders")
 
-load("@makeheaders//src:BUILD.bzl", "makeheaders")
-
-load("//:BUILD.bzl",
-     "LIBFINDLIB_VERSION",
-     "LIBLOG_CC_VERSION",
-     "UTHASH_VERSION")
-load("//config/cc:BUILD.bzl",
-     COPTS = "BASE_COPTS",
+load("//config/cc:CONFIG.bzl",
+     "BASE_DEPS",
+     "BASE_COPTS",
+     "BASE_INCLUDE_PATHS",
      DEFINES = "BASE_DEFINES")
+
+DEPS  = BASE_DEPS + ["@uthash//src:uthash"]
+COPTS = BASE_COPTS + BASE_INCLUDE_PATHS + ["-I$(@uthash)/src"]
+TOOLCHAINS = ["//:test_repo_paths"]
+
+################################################################
+# test_suite(
+#     name  = "test",
+#     tests = [
+#     ]
+# )
 
 ################################################################
 cc_binary(
     name  = "parse_test",
     linkstatic = 1,
-    srcs  = [
-        "parse_test.c",
-        ":mkhdrs"
-    ],
-    deps = [
-        "@liblog_cc//src:logc",
-        "@uthash//src:uthash",
-        "//src:findlib",
-    ],
+    srcs  = ["parse_test.c", ":mkhdrs"],
+    deps = DEPS + ["//src:findlib"],
     copts = COPTS + [
-        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
-        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION),
-        "-I$(GENDIR)/src",
-        "-I$(GENDIR)/test",
-        # these allow this test target to be built as
-        # an external resource (which we do not support):
-        # "-I$(GENDIR)/external/libfindlib~{}/src".format(
-        #     LIBFINDLIB_VERSION),
-        # "-I$(GENDIR)/external/libfindlib~{}/test".format(
-        #     LIBFINDLIB_VERSION),
+        "-I$(GENDIR)/$(@)/src",
+        "-I$(GENDIR)/$(@)/test",
     ],
-    local_defines = DEFINES
+    local_defines = DEFINES,
+    toolchains = TOOLCHAINS,
 )
 
 ##########
@@ -45,45 +38,25 @@ cc_binary(
 cc_binary(
     name  = "lex_test",
     linkstatic = 1,
-    srcs  = [
-        "lex_test.c",
-        ":mkhdrs",
-    ],
-    deps = [
-        "@liblog_cc//src:logc",
-        "@uthash//src:uthash",
-        "//src/lexer:meta_lexer",
-        # "//src:findlib",
-    ],
-    copts = COPTS + [
-        "-I$(GENDIR)/src",
-        "-I$(GENDIR)/test",
-        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
-        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION)
-    ],
+    srcs  = ["lex_test.c", ":mkhdrs"],
+    deps = DEPS + ["//src/lexer:meta_lexer"],
+    copts = COPTS + ["-I$(GENDIR)/$(@)/test"],
     local_defines = DEFINES,
+    toolchains = TOOLCHAINS,
 )
 
 ##########
 cc_binary(
-    name  = "crawler_test",
+    name  = "crawl_test",
     linkstatic = 1,
-    srcs  = [
-        "crawler_test.c",
-        ":mkhdrs"
-    ],
-    deps = [
-        "@liblog_cc//src:logc",
-        "@uthash//src:uthash",
-        "//src:findlib"
-    ],
+    srcs  = ["crawler_test.c", ":mkhdrs"],
+    deps = DEPS   + ["//src:findlib"],
     copts = COPTS + [
-        "-I$(GENDIR)/src",
-        "-I$(GENDIR)/test",
-        "-Iexternal/liblog_cc~{}/src".format(LIBLOG_CC_VERSION),
-        "-Iexternal/uthash~{}/src".format(UTHASH_VERSION)
+        "-I$(GENDIR)/$(@)/src",
+        "-I$(GENDIR)/$(@)/test",
     ],
     local_defines = DEFINES,
+    toolchains = TOOLCHAINS,
 )
 
 ################################################################
@@ -124,7 +97,7 @@ cc_binary(
 ################################################################
 makeheaders(
     name = "mkhdrs",
-    srcs = [
+    hdrs_srcs = [
         "crawler_test.c",
         "lex_test.c",
         "parse_test.c",
