@@ -1,1 +1,1 @@
-workspace(name = "libfindlib")
+# workspace(name = "findlibc")

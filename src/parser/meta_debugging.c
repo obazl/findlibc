@@ -10,7 +10,7 @@ char *sp = " ";
 bool debug_meta;
 
 #if EXPORT_INTERFACE
-#if defined(TRACING)
+#if defined(DEVBUILD)
 #define DUMP_PKG(indent, pkg) \
     log_debug("FINDLIB PKG: %s", pkg->name); \
     dump_package(indent, pkg)
@@ -32,7 +32,10 @@ EXPORT void dump_package(int indent, struct obzl_meta_package *pkg)
 EXPORT void dump_entry(int indent, struct obzl_meta_entry *entry)
 {
     log_trace("%*sdump_entry:", indent, sp);
-    log_debug("%*sentry type: %d", delta+indent, sp, entry->type);
+    log_debug("%*sentry type: %s", delta+indent, sp,
+              entry->type == OMP_PROPERTY
+              ? "property"
+              : "package");
     if (entry->type == OMP_PROPERTY) {
         dump_property(delta+indent, entry->property);
     } else {
@@ -85,8 +88,9 @@ EXPORT void dump_flags(int indent, obzl_meta_flags *flags)
 EXPORT void dump_property(int indent, struct obzl_meta_property *prop)
 {
     /* log_trace("dump_property %p", prop); */
-    log_debug("%*sproperty:", indent, sp);
-    log_debug("%*sname: %s", delta+indent, sp, prop->name);
+    log_debug("%*sdump_property:", indent, sp);
+    log_debug("%*sname: " UGRN "%s" "\033[0m",
+              delta+indent, sp, prop->name);
     dump_settings(delta+indent, prop->settings);
 }
 
@@ -103,7 +107,8 @@ EXPORT void dump_setting(int indent, struct obzl_meta_setting *setting)
 {
     log_trace("%*ssetting:", indent, sp);
     dump_flags(2*delta+indent, setting->flags);
-    log_debug("%*sopcode: %d", delta+indent, sp, setting->opcode);
+    log_debug("%*sopcode: %s", delta+indent, sp,
+              setting->opcode == 0 ? "SET" : "UPDATE");
     dump_values(2*delta+indent, setting->values);
     /* log_trace("%*sdump_setting() finished", indent, sp); */
 }
@@ -130,7 +135,9 @@ void dump_values(int indent, obzl_meta_values *values)
             char **a_value = NULL;
             log_trace("%*svalues:", indent, sp);
             while ( (a_value=(char **)utarray_next(values->list, a_value))) {
-                log_trace("%*s'%s'", delta+indent, sp, *a_value);
+                log_trace("%*s" GRN "%s" CRESET,
+                          delta+indent, sp,
+                          *a_value);
             }
         }
     } else {

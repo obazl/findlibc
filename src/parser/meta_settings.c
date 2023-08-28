@@ -18,7 +18,7 @@ extern char *sp;
 
 /*
   findlib META variable assignment
-  same var can be RHS of multiple assign stmts, distinguished by "predicates"
+  same var can be LHS of multiple assign stmts, distinguished by "predicates"
   e.g. ctypes:
 
   archive(byte) = "ctypes.cma"
@@ -33,6 +33,8 @@ extern char *sp;
   (LHS) to a list of obzl_meta_setting. each setting is a list of
   flags (predicate), an operator, and the RHS (string or list of
   strings)
+
+  (NB: rename 'setting' to 'binding'?)
 
 */
 

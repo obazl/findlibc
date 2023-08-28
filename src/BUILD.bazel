@@ -19,10 +19,10 @@ exports_files(glob([
 
 ################################################################
 cc_library(
-    name = "findlib",
+    name = "findlibc",
     # alwayslink = True,
     srcs = [ ],
-    hdrs = ["findlib.h"],
+    hdrs = ["findlibc.h"],
     deps = [
         # "//src/lexer:meta_lexer",
         "//src/parser:meta_parser",
@@ -82,7 +82,7 @@ cc_library(
 
 makeheaders(
     name = "mkhdrs_export",
-    out ="findlib.h",
+    out ="findlibc.h",
     export_interface = True,
     hdrs_srcs = [
         "//src/lexer:meta_lexis.c",

@@ -7,13 +7,7 @@ config/feature/BUILD.bazel
 
 .bazel
 bazel-*
-private
-*.history.txt
-log.*
-*.log
-obsolete
-tmp
-trace
+*.tgz
 
 # Prerequisites
 *.d

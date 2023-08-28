@@ -6,8 +6,11 @@ load("//config/cc:CONFIG.bzl",
      "BASE_INCLUDE_PATHS",
      DEFINES = "BASE_DEFINES")
 
-DEPS  = BASE_DEPS + ["@uthash//src:uthash"]
-COPTS = BASE_COPTS + BASE_INCLUDE_PATHS + ["-I$(@uthash)/src"]
+DEPS  = BASE_DEPS + ["@liblogc//src:logc", "@uthash//src:uthash"]
+COPTS = BASE_COPTS + BASE_INCLUDE_PATHS + [
+    "-I$(@liblogc)/src",
+    "-I$(@uthash)/src"
+]
 TOOLCHAINS = ["//:test_repo_paths"]
 
 ################################################################
@@ -22,7 +25,7 @@ cc_binary(
     name  = "parse_test",
     linkstatic = 1,
     srcs  = ["parse_test.c", ":mkhdrs"],
-    deps = DEPS + ["//src:findlib"],
+    deps = DEPS + ["//src:findlibc"],
     copts = COPTS + [
         "-I$(GENDIR)/$(@)/src",
         "-I$(GENDIR)/$(@)/test",
@@ -50,7 +53,7 @@ cc_binary(
     name  = "crawl_test",
     linkstatic = 1,
     srcs  = ["crawler_test.c", ":mkhdrs"],
-    deps = DEPS   + ["//src:findlib"],
+    deps = DEPS   + ["//src:findlibc"],
     copts = COPTS + [
         "-I$(GENDIR)/$(@)/src",
         "-I$(GENDIR)/$(@)/test",

@@ -147,6 +147,7 @@ makeheaders(
     additional_srcs = [
         # no header outputs for these
         "//src/lexer:meta_lexis.c",
+        "//src:ansi_colors.h",
     ] + select({
         # "//config/profile:dev?": [
         # "@cc_config//profile:dev?": [

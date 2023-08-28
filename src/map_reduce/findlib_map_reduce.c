@@ -91,14 +91,15 @@ char **tc;
 /* void handle_findlib_pkg(// char *opam_switch_lib, */
 
 #if INTERFACE
-typedef void (*findlib_handler) (char *site_lib, char *pkg_dir);
+typedef void (*findlib_handler) (char *site_lib, char *pkg_dir, void *extra);
 #endif
 
 /* FIXME: pass fn ptr arg 'findlib_site_lib' */
 EXPORT void findlib_map(UT_array *opam_pending_deps,
                         UT_array *opam_exclude_pkgs,
                         char *findlib_site_lib,
-                        findlib_handler _handler)
+                        findlib_handler _handler,
+                        void *extra)
 {
     (void)opam_exclude_pkgs;
 /* #if defined(TRACING) */
@@ -125,9 +126,9 @@ EXPORT void findlib_map(UT_array *opam_pending_deps,
 
     if (utarray_len(opam_pending_deps) < 1) {
         /* default: all pkgs in switch */
-        /* if (verbose && verbosity > 1) { */
+        if (verbose && verbosity > 1) {
             log_info("reading opam pkgs in %s", findlib_site_lib);
-        /* } */
+        }
         errno = 0;
         DIR *switch_dir = opendir(findlib_site_lib);
         if (switch_dir == NULL) {
@@ -152,10 +153,10 @@ EXPORT void findlib_map(UT_array *opam_pending_deps,
 
         if (verbose && verbosity > 1) {
             log_info("pendings ct: %d", utarray_len(opam_pending_deps));
-        }
-        p = NULL;
-        while ( (p=(const char**)utarray_next(opam_pending_deps, p))) {
-            log_info("pending:  %s", *p);
+            p = NULL;
+            while ( (p=(const char**)utarray_next(opam_pending_deps, p))) {
+                log_info("pending:  %s", *p);
+            }
         }
 
         /* log_error("EXITING"); */
@@ -191,7 +192,7 @@ EXPORT void findlib_map(UT_array *opam_pending_deps,
         if (p == NULL)
             utarray_push_back(opam_completed_deps, &next);
 
-        _handler(findlib_site_lib, next);
+        _handler(findlib_site_lib, next, extra);
 
         free(next);
     }
