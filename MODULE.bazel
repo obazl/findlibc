@@ -16,6 +16,7 @@ bazel_dep(name = "lemon",        version = "3.42.0")
 bazel_dep(name = "liblogc",      version = "1.0.0")
 bazel_dep(name = "makeheaders",  version = "1.0.0")
 bazel_dep(name = "re2c",         version = "3.1.0")
+bazel_dep(name = "semverc",      version = "1.0.1")
 bazel_dep(name = "uthash",       version = "2.3.0")
 
 ## dev deps

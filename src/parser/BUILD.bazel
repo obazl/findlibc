@@ -35,11 +35,13 @@ cc_library(
     ],
     deps = [
         "@liblogc//src:logc",
+        "@semverc//src:semverc",
         "@uthash//src:uthash",
         "//src/lexer:meta_lexer",
     ],
     copts = COPTS + [
         "-I$(@liblogc)/src",
+        "-I$(@semverc)/src",
         "-I$(@uthash)/src",
         "-I$(GENDIR)/$(@)/src/parser",
     ],
@@ -66,6 +68,7 @@ cc_library(
     srcs = [
         "meta_syntaxis.c",
         ":mkhdrs",
+        # ":meta_syntaxis_h",
     ] + select({
         # "//config/profile:dev?": [
         "@cc_config//profile:dev?": [
@@ -75,6 +78,7 @@ cc_library(
     }),
     deps = [
         "@liblogc//src:logc",
+        "@semverc//src:semverc",
         "@uthash//src:uthash",
     ],
     copts = COPTS + [
@@ -83,6 +87,7 @@ cc_library(
         "-Wno-visibility",
 
         "-I$(@liblogc)/src",
+        "-I$(@semverc)/src",
         "-I$(@uthash)/src",
 
         ## NOTE: generated meta_syntaxis.c includes header with
@@ -147,6 +152,41 @@ makeheaders(
     additional_srcs = [
         # no header outputs for these
         "//src/lexer:meta_lexis.c",
+        "//src:ansi_colors.h",
+    ] + select({
+        # "//config/profile:dev?": [
+        # "@cc_config//profile:dev?": [
+        "@cc_config//trace:trace?": [
+            "//src:ansi_colors.h", "//src:trace_dev.h"
+        ],
+        "//conditions:default": ["//src:trace_prod.h"]
+    }),
+)
+
+makeheaders(
+    name = "meta_syntaxis_h",
+    hdrs_srcs = [
+        "meta_syntaxis.c",
+        # "meta_parser.c",
+        # "meta_entries.c",
+        # "meta_flags.c",
+        # "meta_packages.c",
+        # "meta_properties.c",
+        # "meta_settings.c",
+        # "meta_values.c",
+        # "utils.c",
+    ],
+    # + select({
+    #     # "//config/profile:dev?": ["meta_debugging.c"],
+    #     "@cc_config//profile:dev?": ["meta_debugging.c"],
+    #     "//conditions:default": []
+    # }),
+    additional_srcs = [
+        # no header outputs for these
+        "//src/lexer:meta_lexis.c",
+        "meta_entries.c",
+        "meta_packages.c",
+        "meta_values.c",
         "//src:ansi_colors.h",
     ] + select({
         # "//config/profile:dev?": [

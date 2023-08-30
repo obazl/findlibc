@@ -25,9 +25,9 @@ char *package_name_from_file_name(char *fname)
     int x = strlen(bn) - 5;
     if ( strncmp(&bn[x], ".META", 5) == 0) {
         bn[x] = '\0';
-        return bn;
+        return strdup(bn);
     } else {
-        return basename(dirname(fname));
+        return strdup(basename(dirname(fname)));
     }
 }
 
@@ -116,7 +116,7 @@ EXPORT struct obzl_meta_package *obzl_meta_parse_file(char *_fname)
 
     MAIN_PKG = (struct obzl_meta_package*)calloc(sizeof(struct obzl_meta_package), 1);
     MAIN_PKG->name      = package_name_from_file_name(strdup(fname));
-    MAIN_PKG->path      = dirname(strdup(fname));
+    MAIN_PKG->path      = strdup(dirname(strdup(fname)));
     MAIN_PKG->directory = MAIN_PKG->name; // dirname(fname);
     MAIN_PKG->metafile  = fname;
 
@@ -195,5 +195,6 @@ EXPORT struct obzl_meta_package *obzl_meta_parse_file(char *_fname)
     /* log_trace("PARSED %s", fname); */
 
     free(buffer);
+
     return MAIN_PKG;
 }

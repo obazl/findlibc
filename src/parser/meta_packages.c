@@ -1,6 +1,9 @@
 #include <stdbool.h>
 
 #include "log.h"
+#if EXPORT_INTERFACE
+#include "semver.h"
+#endif
 #include "utarray.h"
 #include "utstring.h"
 #include "utstrsort.h"
@@ -12,12 +15,16 @@
 #endif
 
 #if EXPORT_INTERFACE
+#include "uthash.h"
+
 struct obzl_meta_package {
-    char *name;
+    char *name;                 /* uthash key */
     char *path;
     char *directory;            /* subdir */
     char *metafile;
     obzl_meta_entries *entries;          /* list of struct obzl_meta_entry */
+    // we CAN use this as a uthash, but we don't have to
+    UT_hash_handle hh;
 };
 #endif
 
@@ -372,17 +379,56 @@ EXPORT int pkg_deps(struct obzl_meta_package *_pkg,
     return 0;
 }
 
+EXPORT semver_t *findlib_pkg_version(struct obzl_meta_package *_pkg)
+{
+    //FIXME: ocaml-compiler-libs META shows no version for
+    //topleve, but each subpkg has a version string.
+    semver_t *semversion
+        = (semver_t*)malloc(sizeof(semver_t));
+    obzl_meta_value version;
+    char *pname = "version";
+    struct obzl_meta_property *version_prop
+        = obzl_meta_package_property(_pkg, pname);
+    if (version_prop) {
+        version = obzl_meta_property_value(version_prop);
+        /* log_debug("    version: %s", (char*)version); */
+        if (!semver_is_valid(version)) {
+            log_warn("BAD VERSION STRING: %s", (char*)version);
+            /* return; */
+        } else {
+            if (version[0] == 'v') {
+                semver_parse(version+1, semversion);
+            } else {
+                semver_parse(version, semversion);
+            }
+            /* log_debug("    compat: %d", semversion->major); */
+            /* semversion.major); */
+        }
+    } else {
+        /* log_warn("    version: 0.0.0 (default)"); */
+        /* version = "0.0.0"; */
+        /* return; //FIXME ??? e.g. dune META has no version */
+    }
+    /* return (char*)version; */
+    return semversion;
+}
+
 /** @brief Returns all predicate-free "required" pkgs.
 
-    @param subpkgs true means return subpackages
+    @param subpkgs true means also include direct deps
+    of all subpkgs as well
+
  */
 EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
                                   bool subpkgs)
 {
     TRACE_ENTRY;
-/* #if defined(TRACING) */
-/*     if (mibl_trace) log_trace("pkg_deps"); */
-/* #endif */
+#if defined(TRACING)
+    /* if (mibl_trace) */
+    log_debug("pkg_deps: %s", _pkg->name);
+#endif
+
+    /* DUMP_PKG(0, _pkg); */
 
     UT_array *pkg_deps;
     utarray_new(pkg_deps, &ut_str_icd);
@@ -391,6 +437,19 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
     /* utarray_push_back(pkg_deps, &s); */
 
     obzl_meta_entries *entries = obzl_meta_package_entries(_pkg);
+
+    // obzl_meta_entries->list is UT_array of obzl_meta_entry
+    log_debug("findlib_pkg_deps: %s", _pkg->name);
+
+    obzl_meta_entry *p;
+    for(p=(obzl_meta_entry*)utarray_front(entries->list);
+        p!=NULL;
+        p=(obzl_meta_entry*)utarray_next(entries->list,p)) {
+        if (p->type == OMP_PACKAGE) {
+            log_debug("  pkg entry: %s", p->package->name);
+            findlib_subpkg_deps(p->package, subpkgs, pkg_deps);
+        }
+  }
 
     char *property = "requires";
     struct obzl_meta_property *deps_prop = NULL;
@@ -516,13 +575,207 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
 
             log_debug("DEP DESEGMENTED: '%s'", s);
 
-            p = NULL;
-            /* FIXME: can we avoid this sort? */
-            utarray_sort(pkg_deps,strsort);
-            p = (char**)utarray_find(pkg_deps, &s, strsort);
-            if (p == NULL) {
-                utarray_push_back(pkg_deps, &s);
+            /* if (subpkgs) { */
+            /*     utarray_push_back(pkg_deps, (char**)dep_name); */
+            /* } else { */
+            if (strcmp(s, _pkg->name) != 0) {
+                p = NULL;
+                /* FIXME: can we avoid this sort? */
+                utarray_sort(pkg_deps,strsort);
+                p = (char**)utarray_find(pkg_deps, &s, strsort);
+                if (p == NULL) {
+                   utarray_push_back(pkg_deps, &s);
+                }
             }
+            /* } */
+/*                 utarray_sort(pending_deps,strsort); /\* FIXME: can we avoid this? *\/ */
+/*                 p = (char**)utarray_find(pending_deps, &s, strsort); */
+/*                 if (p != NULL) { */
+/* /\* #if defined(TRACING) *\/ */
+/* /\*                     if (mibl_debug) *\/ */
+/* /\*                         log_debug(" pending dep already added: %s", *p); *\/ */
+/* /\* #endif *\/ */
+/*                 } else { */
+/* /\* #if defined(TRACING) *\/ */
+/* /\*                     if (mibl_debug) log_debug(" adding new pending dep: %s", s); *\/ */
+/* /\* #endif *\/ */
+/*                     utarray_push_back(pending_deps, &s); */
+/*                 } */
+/*             } */
+        }
+        /* free(condition_comment); */
+    }
+    return pkg_deps;
+}
+
+EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
+                                     bool subpkgs,
+                                     UT_array *pkg_deps)
+{
+    TRACE_ENTRY;
+#if defined(TRACING)
+    /* if (mibl_trace) */
+    log_debug("subpkg_deps: %s", _pkg->name);
+#endif
+
+    /* DUMP_PKG(0, _pkg); */
+
+    /* UT_array *pkg_deps; */
+    /* utarray_new(pkg_deps, &ut_str_icd); */
+
+    /* char *s = "testdep"; */
+    /* utarray_push_back(pkg_deps, &s); */
+
+    obzl_meta_entries *entries = obzl_meta_package_entries(_pkg);
+
+    // obzl_meta_entries->list is UT_array of obzl_meta_entry
+    log_debug("findlib_subpkg_deps: %s", _pkg->name);
+
+    obzl_meta_entry *p;
+    for(p=(obzl_meta_entry*)utarray_front(entries->list);
+        p!=NULL;
+        p=(obzl_meta_entry*)utarray_next(entries->list,p)) {
+        if (p->type == OMP_PACKAGE) {
+            log_debug("  pkg entry: %s", p->package->name);
+            findlib_subpkg_deps(p->package, subpkgs, pkg_deps);
+        }
+  }
+
+    char *property = "requires";
+    struct obzl_meta_property *deps_prop = NULL;
+    deps_prop = obzl_meta_entries_property(entries, property);
+    if ( deps_prop == NULL ) {
+#if defined(TRACING)
+        log_warn("Prop '%s' not found for pkg: %s.", property, _pkg->name);
+#endif
+        return pkg_deps;
+    }
+
+    obzl_meta_settings *settings = obzl_meta_property_settings(deps_prop);
+    obzl_meta_setting *setting = NULL;
+
+    int settings_ct = obzl_meta_settings_count(settings);
+    if (settings_ct == 0) {
+        log_info("No settings for %s", obzl_meta_property_name(deps_prop));
+        return pkg_deps;
+    } else {
+        log_info("settings count: %d", settings_ct);
+    }
+
+    int settings_no_ppx_driver_ct = obzl_meta_settings_flag_count(settings, "ppx_driver", false);
+
+    settings_ct -= settings_no_ppx_driver_ct;
+
+    /* log_info("settings count w/o ppx_driver: %d", settings_ct); */
+
+    if (settings_ct == 0) {
+        log_info("No deps for %s", obzl_meta_property_name(deps_prop));
+        return pkg_deps;
+    }
+
+    obzl_meta_values *vals;
+    obzl_meta_value *dep_name = NULL;
+
+    UT_string *condition_name;
+    utstring_new(condition_name);
+
+    log_debug("iterating settings");
+    for (int i = 0; i < settings_ct; i++) {
+        setting = obzl_meta_settings_nth(settings, i);
+#if defined(DEVBUILD)
+        log_debug("setting %d", i+1);
+        dump_setting(0, setting);
+#endif
+        obzl_meta_flags *flags = obzl_meta_setting_flags(setting);
+        int flags_ct = 0;
+        if (flags != NULL) {
+            /* register_flags(flags); // why? */
+            //int flags_ct =   /* -Wunused-variable */
+            obzl_meta_flags_count(flags);
+            log_debug("flags_ct: %d", flags_ct);
+        }
+
+        if (obzl_meta_flags_has_flag(flags, "ppx_driver", false)) {
+            continue;
+        }
+
+        /* bool has_conditions; */
+        /* if (flags == NULL) */
+        /*     utstring_printf(condition_name, "//conditions:default"); */
+        /* else { */
+        /*     has_conditions = obzl_meta_flags_to_selection_label(flags, condition_name); */
+        /*     (void)has_conditions; /\* prevent [-Wunused-but-set-variable] *\/ */
+        /* } */
+
+        /* char *condition_comment = obzl_meta_flags_to_comment(flags); */
+        /* log_debug("condition_comment: %s", condition_comment); */
+
+        /* 'requires' usually has no flags; when it does, empirically we find only */
+        /*   ppx pkgs: ppx_driver, -ppx_driver */
+        /*   pkg 'batteries': requires(mt) */
+        /*   pkg 'num': requires(toploop) */
+        /*   pkg 'findlib': requires(toploop), requires(create_toploop) */
+
+        /* Multiple settings on 'requires' means multiple flags; */
+        /* empirically, this only happens for ppx packages, typically as */
+        /* requires(-ppx_driver,-custom_ppx) */
+        /* the (sole?) exception is */
+        /*   pkg 'threads': requires(mt,mt_vm), requires(mt,mt_posix) */
+
+        /* if (settings_ct > 1) { */
+        /*     fprintf(ostream, "%*s\"X%s%s\": [ ## predicates: %s\n", */
+        /*             (1+level)*spfactor, sp, */
+        /*             utstring_body(condition_name), */
+        /*             (has_conditions)? "" : "", */
+        /*             condition_comment); */
+        /* } */
+
+        vals = obzl_meta_setting_values(setting);
+        /* vals = resolve_setting_values(setting, flags, settings); */
+        /* vals = obzl_meta_setting_values(setting); */
+#if defined(DEVBUILD)
+        log_debug("vals ct: %d", obzl_meta_values_count(vals));
+        dump_values(0, vals);
+#endif
+        /* now we handle UPDATE settings */
+
+/* #if defined(TRACING) */
+/*         log_debug("iterating values"); */
+/* #endif */
+        char **p = NULL;        /* for searching */
+        for (int j = 0; j < obzl_meta_values_count(vals); j++) {
+            dep_name = obzl_meta_values_nth(vals, j);
+            /* log_debug("property val[%d]: '%s'", j, *dep_name); */
+
+            char *s = strdup((char*)*dep_name);
+/* #if defined(TRACING) */
+            log_debug("DEP: '%s'", s);
+/* #endif */
+            /* utarray_push_back(pkg_deps, &s); */
+
+            /* utarray_push_back(pkg_deps, &s); */
+
+            /* FIXME: drop trailing dot segs - only record toplevels */
+            char *dot = strchr(s, '.');
+            log_debug("DOT: %s", dot);
+
+            if (dot) {
+                *dot = '\0';
+            }
+
+            log_debug("DEP DESEGMENTED: '%s'", s);
+
+            /* if (subpkgs) { */
+            /*     utarray_push_back(pkg_deps, (char**)dep_name); */
+            /* } else { */
+                p = NULL;
+                /* FIXME: can we avoid this sort? */
+                utarray_sort(pkg_deps,strsort);
+                p = (char**)utarray_find(pkg_deps, &s, strsort);
+                if (p == NULL) {
+                    utarray_push_back(pkg_deps, &s);
+                }
+            /* } */
 /*                 utarray_sort(pending_deps,strsort); /\* FIXME: can we avoid this? *\/ */
 /*                 p = (char**)utarray_find(pending_deps, &s, strsort); */
 /*                 if (p != NULL) { */
