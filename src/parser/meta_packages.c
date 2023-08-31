@@ -19,6 +19,7 @@
 
 struct obzl_meta_package {
     char *name;                 /* uthash key */
+    char *module_name;          /* Bazel: lowercase */
     char *path;
     char *directory;            /* subdir */
     char *metafile;
