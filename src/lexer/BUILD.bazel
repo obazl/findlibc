@@ -24,9 +24,9 @@ cc_library(
         ":mkhdrs"
     ] + select({
         "@platforms//os:linux": [
-            "//src/linux:strlcat.c",
-            "//src/linux:strlcpy.c",
-            "//src/linux:strnstr.c"
+            # "//src/linux:strlcat.c",
+            # "//src/linux:strlcpy.c",
+            # "//src/linux:strnstr.c"
         ],
         "//conditions:default":   []
     }),

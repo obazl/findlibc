@@ -37,15 +37,15 @@ EXPORT int obzl_meta_entries_count(obzl_meta_entries *_entries)
 /* **************** */
 EXPORT obzl_meta_entry *obzl_meta_entries_nth(obzl_meta_entries *_entries, unsigned int _i)
 {
-    if (_i < 0) {
-        log_error("Index < min (1)");
-    } else {
+    /* if (_i < 0) { */
+    /*     log_error("Index < min (1)"); */
+    /* } else { */
         if (_i > utarray_len(_entries->list)) {
             log_error("Index > max (%d)", utarray_len(_entries->list));
         } else {
             return utarray_eltptr(_entries->list, _i);
         }
-    }
+    /* } */
     /* FIXME: set errno, return NULL? */
     exit(EXIT_FAILURE);
 }
