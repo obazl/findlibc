@@ -10,7 +10,7 @@
 #if defined(DEBUG_PROPERTIES) || defined (TRACING)
 extern int indent;
 extern int delta;
-extern char *sp;
+extern char *fl_sp;
 #endif
 
 #if EXPORT_INTERFACE
@@ -149,9 +149,9 @@ void property_dtor(void *_elt) {
 EXPORT struct obzl_meta_entry *handle_primitive_prop(int token_type, union meta_token *token)
 {
 #if DEBUG_PROPERTIES
-    log_trace("%*shandle_primitive_prop", indent, sp);
-    log_trace("%*stoken type: %d: %s", indent, sp, token_type, token_names[token_type]);
-    log_trace("%*stoken str:  %s", indent, sp, token->s);
+    log_trace("%*shandle_primitive_prop", indent, fl_sp);
+    log_trace("%*stoken type: %d: %s", indent, fl_sp, token_type, token_names[token_type]);
+    log_trace("%*stoken str:  %s", indent, fl_sp, token->s);
 #endif
     char *n;
     if (token_names[token_type])

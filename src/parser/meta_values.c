@@ -10,9 +10,9 @@
 extern const UT_icd ut_str_icd;
 
 #if defined(DEBUG_VALUES) || defined (TRACING)
-extern int indent;
-extern int delta;
-extern char *sp;
+/* extern int indent; */
+/* extern int delta; */
+/* extern char *sp; */
 #endif
 
 #if EXPORT_INTERFACE

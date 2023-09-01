@@ -15,7 +15,7 @@
 #if TRACING
 extern int indent;
 extern int delta;
-extern char *sp;
+extern char *fl_sp;
 #endif
 
 /* flag == findlib "predicate" */
@@ -224,25 +224,25 @@ EXPORT bool obzl_meta_flags_has_flag(obzl_meta_flags *_flags, char *_flag, bool 
 EXPORT char *obzl_meta_flags_to_comment(obzl_meta_flags *flags)
 {
 #ifdef DEBUG_FLAGS
-    log_trace("%*obzl_meta_flags_to_string", indent, sp);
+    log_trace("%*obzl_meta_flags_to_string", indent, fl_sp);
 #endif
     /* char *buf = (char*)calloc(512, 1); */
     UT_string *buf;
     utstring_new(buf);
 
     if (flags == NULL) {
-        /* printf("%*sflags: none\n", indent, sp); */
+        /* printf("%*sflags: none\n", indent, fl_sp); */
         return utstring_body(buf);
     } else {
         if ( flags->list ) {
             if (utarray_len(flags->list) == 0) {
-                /* printf("%*sflags ct: 0\n", indent, sp); */
+                /* printf("%*sflags ct: 0\n", indent, fl_sp); */
                 return utstring_body(buf);
             } else {
-                /* log_trace("%*sflags ct: %d", indent, sp, utarray_len(flags->list)); */
+                /* log_trace("%*sflags ct: %d", indent, fl_sp, utarray_len(flags->list)); */
                 struct obzl_meta_flag *a_flag = NULL;
                 while ( (a_flag=(struct obzl_meta_flag*)utarray_next(flags->list, a_flag))) {
-                    /* printf("%*s%s (polarity: %d)\n", delta+indent, sp, a_flag->s, a_flag->polarity); */
+                    /* printf("%*s%s (polarity: %d)\n", delta+indent, fl_sp, a_flag->s, a_flag->polarity); */
                     if ( !a_flag->polarity )
                         utstring_printf(buf, "%s", "-");
                     utstring_printf(buf, "%s", a_flag->s); // mystrcat(buf, a_flag->s);
@@ -252,8 +252,8 @@ EXPORT char *obzl_meta_flags_to_comment(obzl_meta_flags *flags)
                 return utstring_body(buf);
             }
         } else {
-            /* printf("%*sflags none: 0\n", indent, sp); */
-            /* log_debug("%*sflags: none", indent, sp); */
+            /* printf("%*sflags none: 0\n", indent, fl_sp); */
+            /* log_debug("%*sflags: none", indent, fl_sp); */
             return utstring_body(buf);
         }
     }
@@ -271,7 +271,7 @@ EXPORT bool obzl_meta_flags_to_selection_label(obzl_meta_flags *flags,
                                          UT_string *_cname)
 {
 #ifdef DEBUG_FLAGS
-    log_trace("%*sobzl_meta_flags_to_condition_name", indent, sp);
+    log_trace("%*sobzl_meta_flags_to_condition_name", indent, fl_sp);
 #endif
     /* char *buf = (char*)calloc(512, 1); */
     /* UT_string *buf; */
@@ -285,7 +285,7 @@ EXPORT bool obzl_meta_flags_to_selection_label(obzl_meta_flags *flags,
     } else {
         if ( flags->list ) {
             if (utarray_len(flags->list) == 0) {
-                /* printf("%*sflags ct: 0\n", indent, sp); */
+                /* printf("%*sflags ct: 0\n", indent, fl_sp); */
                 return false;
             } else {
                 if (utarray_len(flags->list) == 1) {
@@ -328,7 +328,7 @@ EXPORT bool obzl_meta_flags_to_selection_label(obzl_meta_flags *flags,
                     /* compound condition */
                     int ct = utarray_len(flags->list); // obzl_meta_flags_count(flags);
 #if TRACING
-                    log_trace("%*sflags ct: %d", indent, sp, ct);
+                    log_trace("%*sflags ct: %d", indent, fl_sp, ct);
 #endif
                     /* char config_name[128]; */
                     /* config_name[0] = '\0'; */
@@ -373,7 +373,7 @@ EXPORT bool obzl_meta_flags_to_selection_label(obzl_meta_flags *flags,
 
                         if (i - saw_ppx_driver > 0) utstring_printf(config_name, "%s", "_"); // mystrcat(config_name, "_");
 #if TRACING
-                        log_debug("%*s%s (polarity: %d)", delta+indent, sp, a_flag->s, a_flag->polarity);
+                        log_debug("%*s%s (polarity: %d)", delta+indent, fl_sp, a_flag->s, a_flag->polarity);
 #endif
                         if ( !a_flag->polarity ) /* '-' prefix */
                             if (saw_ppx_driver == 0)
@@ -404,8 +404,8 @@ EXPORT bool obzl_meta_flags_to_selection_label(obzl_meta_flags *flags,
                 }
             }
         } else {
-            /* printf("%*sflags none: 0\n", indent, sp); */
-            /* log_debug("%*sflags: none", indent, sp); */
+            /* printf("%*sflags none: 0\n", indent, fl_sp); */
+            /* log_debug("%*sflags: none", indent, fl_sp); */
             return false; // _cname;
         }
     }
@@ -415,7 +415,7 @@ EXPORT bool obzl_meta_flags_to_cmtag(obzl_meta_flags *flags,
                               UT_string *_cname)
 {
 #ifdef DEBUG_FLAGS
-    log_trace("%*sobzl_meta_flags_to_cmtag", indent, sp);
+    log_trace("%*sobzl_meta_flags_to_cmtag", indent, fl_sp);
 #endif
     /* char *buf = (char*)calloc(512, 1); */
     /* UT_string *buf; */
@@ -429,7 +429,7 @@ EXPORT bool obzl_meta_flags_to_cmtag(obzl_meta_flags *flags,
     } else {
         if ( flags->list ) {
             if (utarray_len(flags->list) == 0) {
-                /* printf("%*sflags ct: 0\n", indent, sp); */
+                /* printf("%*sflags ct: 0\n", indent, fl_sp); */
                 return false;
             } else {
                 if (utarray_len(flags->list) == 1) {
@@ -472,7 +472,7 @@ EXPORT bool obzl_meta_flags_to_cmtag(obzl_meta_flags *flags,
                     /* compound condition */
                     int ct = utarray_len(flags->list); // obzl_meta_flags_count(flags);
 #if TRACING
-                    log_trace("%*sflags ct: %d", indent, sp, ct);
+                    log_trace("%*sflags ct: %d", indent, fl_sp, ct);
 #endif
                     /* char config_name[128]; */
                     /* config_name[0] = '\0'; */
@@ -517,7 +517,7 @@ EXPORT bool obzl_meta_flags_to_cmtag(obzl_meta_flags *flags,
 
                         if (i - saw_ppx_driver > 0) utstring_printf(config_name, "%s", "_"); // mystrcat(config_name, "_");
 #if TRACING
-                        log_debug("%*s%s (polarity: %d)", delta+indent, sp, a_flag->s, a_flag->polarity);
+                        log_debug("%*s%s (polarity: %d)", delta+indent, fl_sp, a_flag->s, a_flag->polarity);
 #endif
                         if ( !a_flag->polarity ) /* '-' prefix */
                             if (saw_ppx_driver == 0)
@@ -548,8 +548,8 @@ EXPORT bool obzl_meta_flags_to_cmtag(obzl_meta_flags *flags,
                 }
             }
         } else {
-            /* printf("%*sflags none: 0\n", indent, sp); */
-            /* log_debug("%*sflags: none", indent, sp); */
+            /* printf("%*sflags none: 0\n", indent, fl_sp); */
+            /* log_debug("%*sflags: none", indent, fl_sp); */
             return false; // _cname;
         }
     }

@@ -11,9 +11,9 @@
 #include "meta_settings.h"
 
 #if defined(DEBUG_SETTINGS) || defined (TRACING)
-extern int indent;
-extern int delta;
-extern char *sp;
+/* extern int indent; */
+/* extern int delta; */
+/* extern char *fl_sp; */
 #endif
 
 /*

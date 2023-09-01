@@ -11,7 +11,7 @@
 #if defined(YYDEBUG)
 extern int indent;
 extern int delta;
-extern char *sp;
+extern char *fl_sp;
 #endif
 
 #if INTERFACE
@@ -172,8 +172,8 @@ entries(ENTRIES) ::= entry(ENTRY) . {
 #ifdef YYDEBUG
     log_trace("\n");
     log_trace(">>entries ::= entry");
-    log_trace("%*sentries lhs (ENTRIES)", indent, sp);
-    log_trace("%*sentry (ENTRY)", indent, sp);
+    log_trace("%*sentries lhs (ENTRIES)", indent, fl_sp);
+    log_trace("%*sentry (ENTRY)", indent, fl_sp);
     /* dump_entry(indent, ENTRY); */
 #endif
     /* lhs ENTRIES: lemon only allocates the type (a ptr); we must allocate/init the struct */
@@ -190,10 +190,10 @@ entries(ENTRIES) ::= entries(PREVENTRIES) entry(ENTRY) . {
 #ifdef YYDEBUG
     log_trace("\n");
     log_trace(">>entries ::= entries entry");
-    log_trace("%*sentries lhs(ENTRIES)", indent, sp); //, obzl_meta_entries_count(ENTRIES));
-    log_trace("%*sentries rhs(PREVENTRIES)", indent, sp); //, obzl_meta_entries_count(PREVENTRIES));
+    log_trace("%*sentries lhs(ENTRIES)", indent, fl_sp); //, obzl_meta_entries_count(ENTRIES));
+    log_trace("%*sentries rhs(PREVENTRIES)", indent, fl_sp); //, obzl_meta_entries_count(PREVENTRIES));
     /* dump_entries(delta+indent, PREVENTRIES); */
-    log_trace("%*sentry (ENTRY)", indent, sp); //, obzl_meta_entries_count(PREVENTRIES));
+    log_trace("%*sentry (ENTRY)", indent, fl_sp); //, obzl_meta_entries_count(PREVENTRIES));
     dump_entry(delta+indent, ENTRY);
 #endif
 
@@ -414,9 +414,9 @@ entry(ENTRY) ::= REQUIRES(P) opcode(OPCODE) words(WS) . {
 #ifdef YYDEBUG
     log_trace("\n");
     log_trace(">>entry ::= REQUIRES opcode words");
-    log_trace("%*sentry (ENTRY)", indent, sp);
-    log_trace("%*sopcode (OPCODE): %d", indent, sp, OPCODE);
-    log_trace("%*swords (WS)", indent, sp);
+    log_trace("%*sentry (ENTRY)", indent, fl_sp);
+    log_trace("%*sopcode (OPCODE): %d", indent, fl_sp, OPCODE);
+    log_trace("%*swords (WS)", indent, fl_sp);
 #endif
 
     /* validate_requires_args(WS); */
@@ -450,11 +450,11 @@ entry(ENTRY) ::= REQUIRES FLAGS(FLAGS) opcode(OPCODE) words(WS) . {
 #ifdef YYDEBUG
     log_trace("\n");
     log_trace(">>entry ::= REQUIRES LPAREN flag RPAREN opcode words");
-    log_trace("%*sentry (ENTRY)", indent, sp);
-    log_trace("%*sflags (FLAGS): %s", indent, sp, FLAGS->s);
+    log_trace("%*sentry (ENTRY)", indent, fl_sp);
+    log_trace("%*sflags (FLAGS): %s", indent, fl_sp, FLAGS->s);
     /* dump_flags(FLAGS); */
-    log_trace("%*sopcode (OPCODE): %d", indent, sp, OPCODE);
-    log_trace("%*swords (WS)", indent, sp);
+    log_trace("%*sopcode (OPCODE): %d", indent, fl_sp, OPCODE);
+    log_trace("%*swords (WS)", indent, fl_sp);
     /* dump_values(WS); */
 #endif
     /* ENTRY = handle_requires_prop(FLAGS, OPCODE, WS); */
@@ -494,9 +494,9 @@ entry(ENTRY) ::= PPX_RUNTIME_DEPS opcode(OPCODE) words(WS) . {
 #ifdef YYDEBUG
     log_trace("\n");
     log_trace(">>entry ::= PPX_RUNTIME_DEPS opcode words");
-    log_trace("%*sentry (ENTRY)", indent, sp);
-    log_trace("%*sopcode (OPCODE): %d", indent, sp, OPCODE);
-    log_trace("%*swords (WS)", indent, sp);
+    log_trace("%*sentry (ENTRY)", indent, fl_sp);
+    log_trace("%*sopcode (OPCODE): %d", indent, fl_sp, OPCODE);
+    log_trace("%*swords (WS)", indent, fl_sp);
 #endif
 
     struct obzl_meta_property *new_prop= obzl_meta_property_new(strdup("ppx_runtime_deps"));
@@ -516,11 +516,11 @@ entry(ENTRY) ::= PPX_RUNTIME_DEPS FLAGS(FLAGS) opcode(OPCODE) words(WS) . {
 #ifdef YYDEBUG
     log_trace("\n");
     log_trace(">>entry ::= PPX_RUNTIME_DEPS LPAREN flag RPAREN opcode words");
-    log_trace("%*sentry (ENTRY)", indent, sp);
-    log_trace("%*sflags (FLAGS): %s", indent, sp, FLAGS->s);
+    log_trace("%*sentry (ENTRY)", indent, fl_sp);
+    log_trace("%*sflags (FLAGS): %s", indent, fl_sp, FLAGS->s);
     /* dump_flags(FLAGS); */
-    log_trace("%*sopcode (OPCODE): %d", indent, sp, OPCODE);
-    log_trace("%*swords (WS)", indent, sp);
+    log_trace("%*sopcode (OPCODE): %d", indent, fl_sp, OPCODE);
+    log_trace("%*swords (WS)", indent, fl_sp);
     /* dump_values(WS); */
 #endif
     struct obzl_meta_property *new_prop= obzl_meta_property_new(strdup("ppx_runtime_deps"));
