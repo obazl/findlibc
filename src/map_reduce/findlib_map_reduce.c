@@ -102,14 +102,14 @@ EXPORT void findlib_map(UT_array *opam_pending_deps,
                         void *extra)
 {
     (void)opam_exclude_pkgs;
-/* #if defined(TRACING) */
+#if defined(FL_TRACING)
         log_debug(BLU "findlib_map" CRESET);
         log_debug("%s %s", "findlib site-lib:", findlib_site_lib);
         /* log_debug("%-16s%s", "launch_dir:", launch_dir); */
         /* log_debug("%-16s%s", "base ws:", rootws); */
         /* log_debug("%-16s%s", "effective ws:", ews_root); */
         log_debug("pendings ct: %d", utarray_len(opam_pending_deps));
-/* #endif */
+#endif
 
     if (verbose && verbosity > 1) {
         log_info("current dir: %s", getcwd(NULL, 0));

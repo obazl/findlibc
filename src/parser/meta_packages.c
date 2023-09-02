@@ -394,7 +394,7 @@ EXPORT semver_t *findlib_pkg_version(struct obzl_meta_package *_pkg)
         version = obzl_meta_property_value(version_prop);
         /* log_debug("    version: %s", (char*)version); */
         if (!semver_is_valid(version)) {
-            log_warn("BAD VERSION STRING: %s", (char*)version);
+            /* log_warn("BAD VERSION STRING: %s", (char*)version); */
             /* return; */
         } else {
             if (version[0] == 'v') {
@@ -440,14 +440,15 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
     obzl_meta_entries *entries = obzl_meta_package_entries(_pkg);
 
     // obzl_meta_entries->list is UT_array of obzl_meta_entry
+#if defined(DEVBUILD)
     log_debug("findlib_pkg_deps: %s", _pkg->name);
-
+#endif
     obzl_meta_entry *p;
     for(p=(obzl_meta_entry*)utarray_front(entries->list);
         p!=NULL;
         p=(obzl_meta_entry*)utarray_next(entries->list,p)) {
         if (p->type == OMP_PACKAGE) {
-            log_debug("  pkg entry: %s", p->package->name);
+            /* log_debug("  pkg entry: %s", p->package->name); */
             findlib_subpkg_deps(p->package, subpkgs, pkg_deps);
         }
   }
@@ -467,10 +468,10 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
 
     int settings_ct = obzl_meta_settings_count(settings);
     if (settings_ct == 0) {
-        log_info("No settings for %s", obzl_meta_property_name(deps_prop));
+        /* log_info("No settings for %s", obzl_meta_property_name(deps_prop)); */
         return pkg_deps;
     } else {
-        log_info("settings count: %d", settings_ct);
+        /* log_info("settings count: %d", settings_ct); */
     }
 
     int settings_no_ppx_driver_ct = obzl_meta_settings_flag_count(settings, "ppx_driver", false);
@@ -480,7 +481,7 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
     /* log_info("settings count w/o ppx_driver: %d", settings_ct); */
 
     if (settings_ct == 0) {
-        log_info("No deps for %s", obzl_meta_property_name(deps_prop));
+        /* log_info("No deps for %s", obzl_meta_property_name(deps_prop)); */
         return pkg_deps;
     }
 
@@ -490,7 +491,7 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
     UT_string *condition_name;
     utstring_new(condition_name);
 
-    log_debug("iterating settings");
+    /* log_debug("iterating settings"); */
     for (int i = 0; i < settings_ct; i++) {
         setting = obzl_meta_settings_nth(settings, i);
 #if defined(DEVBUILD)
@@ -498,12 +499,12 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
         dump_setting(0, setting);
 #endif
         obzl_meta_flags *flags = obzl_meta_setting_flags(setting);
-        int flags_ct = 0;
+        /* int flags_ct = 0; */
         if (flags != NULL) {
             /* register_flags(flags); // why? */
             //int flags_ct =   /* -Wunused-variable */
             obzl_meta_flags_count(flags);
-            log_debug("flags_ct: %d", flags_ct);
+            /* log_debug("flags_ct: %d", flags_ct); */
         }
 
         if (obzl_meta_flags_has_flag(flags, "ppx_driver", false)) {
@@ -559,22 +560,22 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
             /* log_debug("property val[%d]: '%s'", j, *dep_name); */
 
             char *s = strdup((char*)*dep_name);
-/* #if defined(TRACING) */
+#if defined(TRACING)
             log_debug("DEP: '%s'", s);
-/* #endif */
+#endif
             /* utarray_push_back(pkg_deps, &s); */
 
             /* utarray_push_back(pkg_deps, &s); */
 
             /* FIXME: drop trailing dot segs - only record toplevels */
             char *dot = strchr(s, '.');
-            log_debug("DOT: %s", dot);
+            /* log_debug("DOT: %s", dot); */
 
             if (dot) {
                 *dot = '\0';
             }
 
-            log_debug("DEP DESEGMENTED: '%s'", s);
+            /* log_debug("DEP DESEGMENTED: '%s'", s); */
 
             /* if (subpkgs) { */
             /*     utarray_push_back(pkg_deps, (char**)dep_name); */
@@ -614,11 +615,6 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
                                      UT_array *pkg_deps)
 {
     TRACE_ENTRY;
-#if defined(TRACING)
-    /* if (mibl_trace) */
-    log_debug("subpkg_deps: %s", _pkg->name);
-#endif
-
     /* DUMP_PKG(0, _pkg); */
 
     /* UT_array *pkg_deps; */
@@ -630,14 +626,14 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
     obzl_meta_entries *entries = obzl_meta_package_entries(_pkg);
 
     // obzl_meta_entries->list is UT_array of obzl_meta_entry
-    log_debug("findlib_subpkg_deps: %s", _pkg->name);
+    /* log_debug("findlib_subpkg_deps: %s", _pkg->name); */
 
     obzl_meta_entry *p;
     for(p=(obzl_meta_entry*)utarray_front(entries->list);
         p!=NULL;
         p=(obzl_meta_entry*)utarray_next(entries->list,p)) {
         if (p->type == OMP_PACKAGE) {
-            log_debug("  pkg entry: %s", p->package->name);
+            /* log_debug("  pkg entry: %s", p->package->name); */
             findlib_subpkg_deps(p->package, subpkgs, pkg_deps);
         }
   }
@@ -657,10 +653,10 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
 
     int settings_ct = obzl_meta_settings_count(settings);
     if (settings_ct == 0) {
-        log_info("No settings for %s", obzl_meta_property_name(deps_prop));
+        /* log_info("No settings for %s", obzl_meta_property_name(deps_prop)); */
         return pkg_deps;
     } else {
-        log_info("settings count: %d", settings_ct);
+        /* log_info("settings count: %d", settings_ct); */
     }
 
     int settings_no_ppx_driver_ct = obzl_meta_settings_flag_count(settings, "ppx_driver", false);
@@ -670,7 +666,7 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
     /* log_info("settings count w/o ppx_driver: %d", settings_ct); */
 
     if (settings_ct == 0) {
-        log_info("No deps for %s", obzl_meta_property_name(deps_prop));
+        /* log_info("No deps for %s", obzl_meta_property_name(deps_prop)); */
         return pkg_deps;
     }
 
@@ -680,20 +676,20 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
     UT_string *condition_name;
     utstring_new(condition_name);
 
-    log_debug("iterating settings");
+    /* log_debug("iterating settings"); */
     for (int i = 0; i < settings_ct; i++) {
         setting = obzl_meta_settings_nth(settings, i);
 #if defined(DEVBUILD)
-        log_debug("setting %d", i+1);
+        /* log_debug("setting %d", i+1); */
         dump_setting(0, setting);
 #endif
         obzl_meta_flags *flags = obzl_meta_setting_flags(setting);
-        int flags_ct = 0;
+        /* int flags_ct = 0; */
         if (flags != NULL) {
             /* register_flags(flags); // why? */
             //int flags_ct =   /* -Wunused-variable */
             obzl_meta_flags_count(flags);
-            log_debug("flags_ct: %d", flags_ct);
+            /* log_debug("flags_ct: %d", flags_ct); */
         }
 
         if (obzl_meta_flags_has_flag(flags, "ppx_driver", false)) {
@@ -750,7 +746,7 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
 
             char *s = strdup((char*)*dep_name);
 /* #if defined(TRACING) */
-            log_debug("DEP: '%s'", s);
+            /* log_debug("DEP: '%s'", s); */
 /* #endif */
             /* utarray_push_back(pkg_deps, &s); */
 
@@ -758,13 +754,13 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
 
             /* FIXME: drop trailing dot segs - only record toplevels */
             char *dot = strchr(s, '.');
-            log_debug("DOT: %s", dot);
+            /* log_debug("DOT: %s", dot); */
 
             if (dot) {
                 *dot = '\0';
             }
 
-            log_debug("DEP DESEGMENTED: '%s'", s);
+            /* log_debug("DEP DESEGMENTED: '%s'", s); */
 
             /* if (subpkgs) { */
             /*     utarray_push_back(pkg_deps, (char**)dep_name); */
