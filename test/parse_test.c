@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
                         obzl_meta_package_name(pkg));
         log_debug("imports_path: %s", utstring_body(imports_path));
         /* log_debug("emitting for pkg: %s", pkg->name); */
-        dump_package(0, pkg);
+        /* dump_package(0, pkg); */
         /* fflush(bootstrap_FILE); */
 
         /* utstring_renew(workspace_file); */

@@ -19,7 +19,7 @@
 #include "utstring.h"
 #include "utstring.h"
 
-#include "findlib.h"
+#include "findlibc.h"
 #include "meta_parse.h"
 
 bool verbose;
