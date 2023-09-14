@@ -20,17 +20,14 @@ cc_binary(
     deps = BASE_DEPS + [
         # "@liblogc//src:logc",
         "@uthash//src:uthash",
-        "//src:findlib"
+        "//src:findlibc"
     ],
     copts = COPTS + [
         "-I$(@uthash)/src",
         "-I$(GENDIR)/$(@)/src",
-        "-I$(GENDIR)/$(@)/test/app"
-
-        # "-I$(GENDIR)/src",
-        # "-I$(GENDIR)/test/app",
-        # "-Iexternal/liblogc~{}/src".format(LIBLOGC_VERSION),
-        # "-Iexternal/uthash~{}/src".format(UTHASH_VERSION)
+        "-I$(GENDIR)/$(@)/test/app",
+        "-I$(@liblogc)/src",
+        "-I$(@uthash)/src"
     ],
     local_defines = DEFINES,
     toolchains = TOOLCHAINS,
