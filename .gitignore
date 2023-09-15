@@ -1,4 +1,7 @@
-.bazel/
+.bazelignore
+.bazeliskrc
+.bazelversion
+.bazel
 bazel-*
 *.gz
 log.*
