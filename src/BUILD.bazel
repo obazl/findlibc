@@ -14,7 +14,7 @@ DEFINES = BASE_DEFINES + ["TRACING"]
 
 exports_files(glob([
     "ansi_colors.h",
-    "trace_dev.h", "trace_prod.h",
+    "macros_debug.h", "macros_ndebug.h",
 ]))
 
 ################################################################
@@ -96,8 +96,8 @@ makeheaders(
         "//src/parser:meta_values.c",
         "//src/map_reduce:findlib_map_reduce.c",
     ] + select({
-        # "//config/profile:dev?": [
-        "@cc_config//profile:dev?": [
+        # "@cc_config//profile:dev?": [
+        "//config/compilation_mode:fastbuild?": [
             "//src/parser:meta_debugging.c",
         ],
         "//conditions:default": []

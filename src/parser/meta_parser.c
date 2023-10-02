@@ -9,6 +9,13 @@
 
 struct obzl_meta_package *MAIN_PKG;
 
+#if defined(DEBUG)
+/* int  debug; */
+int  findlib_debug;
+int  verbosity;
+bool findlib_trace;
+#endif
+
 LOCAL bool _is_empty(const char *s)
 {
   while (*s) {

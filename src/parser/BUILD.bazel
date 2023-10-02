@@ -70,8 +70,8 @@ cc_library(
         ":mkhdrs",
         # ":meta_syntaxis_h",
     ] + select({
-        # "//config/profile:dev?": [
-        "@cc_config//profile:dev?": [
+        "//config/compilation_mode:fastbuild?": [
+        # "@cc_config//profile:dev?": [
             "meta_debugging.c",
         ],
         "//conditions:default": []
@@ -146,8 +146,9 @@ makeheaders(
         "meta_values.c",
         # "utils.c",
     ] + select({
-        # "//config/profile:dev?": ["meta_debugging.c"],
-        "@cc_config//profile:dev?": ["meta_debugging.c"],
+        "//config/compilation_mode:fastbuild?": [
+            "meta_debugging.c"],
+        #"@cc_config//profile:dev?": ["meta_debugging.c"],
         "//conditions:default": []
     }),
     additional_srcs = [
@@ -155,12 +156,10 @@ makeheaders(
         "//src/lexer:meta_lexis.c",
         "//src:ansi_colors.h",
     ] + select({
-        # "//config/profile:dev?": [
-        # "@cc_config//profile:dev?": [
-        "@cc_config//trace:trace?": [
-            "//src:ansi_colors.h", "//src:trace_dev.h"
+        "//config/compilation_mode:fastbuild?": [
+            "//src:macros_debug.h"
         ],
-        "//conditions:default": ["//src:trace_prod.h"]
+        "//conditions:default": ["//src:macros_ndebug.h"]
     }),
 )
 

@@ -38,10 +38,10 @@ EXPORT int obzl_meta_entries_count(obzl_meta_entries *_entries)
 EXPORT obzl_meta_entry *obzl_meta_entries_nth(obzl_meta_entries *_entries, unsigned int _i)
 {
     /* if (_i < 0) { */
-    /*     log_error("Index < min (1)"); */
+    /*     LOG_ERROR(0, "Index < min (1)"); */
     /* } else { */
         if (_i > utarray_len(_entries->list)) {
-            log_error("Index > max (%d)", utarray_len(_entries->list));
+            LOG_ERROR(0, "Index > max (%d)", utarray_len(_entries->list));
         } else {
             return utarray_eltptr(_entries->list, _i);
         }
@@ -53,23 +53,21 @@ EXPORT obzl_meta_entry *obzl_meta_entries_nth(obzl_meta_entries *_entries, unsig
 /* **************** */
 EXPORT obzl_meta_property *obzl_meta_entries_property(obzl_meta_entries *_entries, char *_name)
 {
-    TRACE_ENTRY
-#if DEBUG_ENTRIES
-    log_trace("obzl_meta_entries_property('%s')", _name);
-#endif
+    TRACE_ENTRY_MSG("prop: %s", _name);
+
     /* utarray_find requires a sort; not worth the cost */
     obzl_meta_entry *e = NULL;
     for (int i = 0; i < obzl_meta_entries_count(_entries); i++) {
         e = obzl_meta_entries_nth(_entries, i);
         if (e->type == OMP_PROPERTY) {
-            /* log_debug("property: %s := %s", */
+            /* LOG_DEBUG(0, "property: %s := %s", */
             /*           e->property->name, */
             /*           obzl_meta_property_value(e->property)); */
             if (strncmp(e->property->name, _name, 256) == 0) {
                 return e->property;
             }
         }
-        /* log_debug("iteration %d", i); */
+        /* LOG_DEBUG(0, "iteration %d", i); */
     }
     return NULL;
 }
@@ -77,24 +75,22 @@ EXPORT obzl_meta_property *obzl_meta_entries_property(obzl_meta_entries *_entrie
 /* **************** */
 EXPORT char *obzl_meta_directory_property(obzl_meta_entries *_entries)
 {
-    TRACE_ENTRY
-/* #if DEBUG_ENTRIES */
-/*     log_trace("obzl_meta_directory_property"); */
-/* #endif */
+    TRACE_ENTRY;
+
     if (_entries == NULL) return NULL;
     /* utarray_find requires a sort; not worth the cost */
     obzl_meta_entry *e = NULL;
     for (int i = 0; i < obzl_meta_entries_count(_entries); i++) {
         e = obzl_meta_entries_nth(_entries, i);
         if (e->type == OMP_PROPERTY) {
-            /* log_debug("property: %s := %s", */
+            /* LOG_DEBUG(0, "property: %s := %s", */
             /*           e->property->name, */
             /*           obzl_meta_property_value(e->property)); */
             if (strncmp(e->property->name, "directory", 9) == 0) {
                 return obzl_meta_property_value(e->property);
             }
         }
-        /* log_debug("iteration %d", i); */
+        /* LOG_DEBUG(0, "iteration %d", i); */
     }
     return NULL;
 }
@@ -117,18 +113,19 @@ void entry_dtor(void *_elt) {
 /* **************************************************************** */
 void normalize_entries(obzl_meta_entries *entries, obzl_meta_entry *_entry)
 {
+    TRACE_ENTRY;
 #if DEBUG_ENTRIES
-    /* log_trace("normalize_entries()"); */
+    /* LOG_TRACE(0, "normalize_entries()"); */
     /* if (_entry->type == OMP_PROPERTY) { */
-    /*     log_trace("new entry type: property"); */
-    /*     log_trace("\tname: %s", _entry->property->name); */
+    /*     LOG_TRACE(0, "new entry type: property"); */
+    /*     LOG_TRACE(0, "\tname: %s", _entry->property->name); */
     /* } else { */
-    /*     log_trace("new entry type: package"); */
+    /*     LOG_TRACE(0, "new entry type: package"); */
     /* } */
 #endif
 
     int ct = obzl_meta_entries_count(entries);
-    /* log_trace("entries ct: %d", ct); */
+    /* LOG_TRACE(0, "entries ct: %d", ct); */
     obzl_meta_entry *e = NULL;
 
     bool matched = false;
@@ -136,11 +133,11 @@ void normalize_entries(obzl_meta_entries *entries, obzl_meta_entry *_entry)
         e = obzl_meta_entries_nth(entries, i);
 
         if (e->type == _entry->type) {
-            /* log_trace("old entry type: property"); */
-            /* log_trace("\tname: %s", e->property->name); */
+            /* LOG_TRACE(0, "old entry type: property"); */
+            /* LOG_TRACE(0, "\tname: %s", e->property->name); */
             if (e->type == OMP_PROPERTY) {
                 if (strncmp(e->property->name, _entry->property->name, 32) == 0) {
-                    /* log_trace("match"); */
+                    /* LOG_TRACE(0, "match"); */
                     matched = true;
                     /* update the entry  */
                     /* obzl_meta_settings *settings = e->property->settings; */
@@ -149,7 +146,7 @@ void normalize_entries(obzl_meta_entries *entries, obzl_meta_entry *_entry)
                 }
             }
         /* } else { */
-            /* log_trace("old entry type: package"); */
+            /* LOG_TRACE(0, "old entry type: package"); */
         }
     }
     if ( !matched ) {

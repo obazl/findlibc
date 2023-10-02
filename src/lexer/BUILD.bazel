@@ -52,11 +52,12 @@ makeheaders(
     additional_srcs = [
         "//src/parser:meta_syntaxis.c"
     ] + select({
+        "//config/debug:debug?": [
         # "//config/profile:dev?": [
-        "@cc_config//profile:dev?": [
-            "//src:ansi_colors.h", "//src:trace_dev.h"
+        # "@cc_config//profile:dev?": [
+            "//src:ansi_colors.h", "//src:macros_debug.h"
         ],
-        "//conditions:default": ["//src:trace_prod.h"]
+        "//conditions:default": ["//src:macros_ndebug.h"]
     }),
     visibility = ["//visibility:public"]
 )
