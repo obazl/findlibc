@@ -10,6 +10,11 @@
 
 #include "meta_entries.h"
 
+#if defined(DEBUG)
+extern int  findlib_debug;
+extern bool findlib_trace;
+#endif
+
 /* **************************************************************** */
 #if EXPORT_INTERFACE
 enum obzl_meta_entry_type_e { OMP_PROPERTY, OMP_PACKAGE };

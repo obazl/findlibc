@@ -13,6 +13,11 @@
 #if EXPORT_INTERFACE
 #include "uthash.h"
 
+#if defined(DEBUG_fastbuild)
+extern int  findlib_debug;
+extern bool findlib_trace;
+#endif
+
 struct obzl_meta_package {
     char *name;                 /* uthash key */
     char *module_name;          /* Bazel: lowercase */
@@ -465,7 +470,7 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
     for (int i = 0; i < settings_ct; i++) {
         setting = obzl_meta_settings_nth(settings, i);
         LOG_DEBUG(3, "setting %d", i+1);
-#if defined(DEBUG)
+#if defined(DEBUG_fastbuild)
         if (findlib_debug > 3) dump_setting(0, setting);
 #endif
         obzl_meta_flags *flags = obzl_meta_setting_flags(setting);
@@ -516,7 +521,7 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
         /* vals = resolve_setting_values(setting, flags, settings); */
         /* vals = obzl_meta_setting_values(setting); */
         LOG_DEBUG(3, "vals ct: %d", obzl_meta_values_count(vals));
-#if defined(DEBUG)
+#if defined(DEBUG_fastbuild)
         if (findlib_debug > 3) dump_values(0, vals);
 #endif
         /* now we handle UPDATE settings */
@@ -639,7 +644,7 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
     LOG_DEBUG(3, "iterating settings", "");
     for (int i = 0; i < settings_ct; i++) {
         setting = obzl_meta_settings_nth(settings, i);
-#if defined(DEBUG)
+#if defined(DEBUG_fastbuild)
         LOG_DEBUG(3, "setting %d", i+1);
         if (findlib_debug > 3) dump_setting(0, setting);
 #endif
@@ -691,7 +696,7 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
         /* vals = resolve_setting_values(setting, flags, settings); */
         /* vals = obzl_meta_setting_values(setting); */
         LOG_DEBUG(3, "vals ct: %d", obzl_meta_values_count(vals));
-#if defined(DEBUG)
+#if defined(DEBUG_fastbuild)
         if (findlib_debug > 2) dump_values(0, vals);
 #endif
         /* now we handle UPDATE settings */

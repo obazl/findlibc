@@ -8,6 +8,11 @@
 
 #include "log.h"
 
+/* #if defined(DEBUG_fastbuild) */
+extern int  findlib_debug;
+extern bool findlib_trace;
+/* #endif */
+
 #include "meta_settings.h"
 
 #if defined(DEBUG_SETTINGS) || defined (TRACING)

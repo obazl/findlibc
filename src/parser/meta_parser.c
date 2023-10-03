@@ -9,10 +9,8 @@
 
 struct obzl_meta_package *MAIN_PKG;
 
-#if defined(DEBUG)
-/* int  debug; */
+#if defined(DEBUG_fastbuild)
 int  findlib_debug;
-int  verbosity;
 bool findlib_trace;
 #endif
 

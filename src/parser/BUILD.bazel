@@ -6,7 +6,10 @@ load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//config/cc:CONFIG.bzl",
      COPTS   = "BASE_COPTS",
-     DEFINES = "BASE_DEFINES")
+     "BASE_DEFINES")
+
+DEFINES = BASE_DEFINES + [
+]
 
 TOOLCHAINS = ["//:repo_paths"]
 
@@ -45,7 +48,10 @@ cc_library(
         "-I$(@uthash)/src",
         "-I$(GENDIR)/$(@)/src/parser",
     ],
-    defines = DEFINES + select({
+    defines = ["DEBUG_$(COMPILATION_MODE)"],
+    # defines = ["DEBUG=$(COMPILATION_MODE)==fastbuild"],
+    # defines = ["DEBUG="],
+    local_defines = DEFINES + select({
         ":yydebug?": ["YYDEBUG"], "//conditions:default":   []
     }) + select({
         ":yytrace?": ["YYTRACE"], "//conditions:default":   []

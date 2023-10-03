@@ -15,6 +15,11 @@ extern const UT_icd ut_str_icd;
 /* extern char *sp; */
 #endif
 
+#if defined(DEBUG_fastbuild)
+extern int  findlib_debug;
+extern bool findlib_trace;
+#endif
+
 #if EXPORT_INTERFACE
 typedef char *obzl_meta_value;
 
