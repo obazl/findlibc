@@ -123,6 +123,7 @@ EXPORT struct obzl_meta_package *obzl_meta_parse_file(char *_fname)
     MAIN_PKG->name      = package_name_from_file_name(fname);
     char *x = strdup(MAIN_PKG->name);
     char *p;
+    // module names may not contain uppercase
     for (p = x; *p; ++p) *p = tolower(*p);
     MAIN_PKG->module_name = strdup(x);
     free(x);
