@@ -17,13 +17,9 @@
 #include <unistd.h>
 
 #include "log.h"
-/* #if INTERFACE */
 #include "utarray.h"
 #include "utstring.h"
 #include "utstrsort.h"
-
-/* /\* #include "s7.h" *\/ */
-/* #endif */
 
 #include "findlib_map_reduce.h"
 
@@ -101,15 +97,13 @@ EXPORT void findlib_map(UT_array *opam_pending_deps,
                         findlib_handler _handler,
                         void *extra)
 {
+    TRACE_ENTRY;
     (void)opam_exclude_pkgs;
-#if defined(FL_TRACING)
-        log_debug(BLU "findlib_map" CRESET);
-        log_debug("%s %s", "findlib site-lib:", findlib_site_lib);
+    LOG_DEBUG(0, "%s %s", "findlib site-lib:", findlib_site_lib);
         /* log_debug("%-16s%s", "launch_dir:", launch_dir); */
         /* log_debug("%-16s%s", "base ws:", rootws); */
         /* log_debug("%-16s%s", "effective ws:", ews_root); */
-        log_debug("pendings ct: %d", utarray_len(opam_pending_deps));
-#endif
+    LOG_DEBUG(0, "pendings ct: %d", utarray_len(opam_pending_deps));
 
     if (verbose && verbosity > 1) {
         log_info("current dir: %s", getcwd(NULL, 0));

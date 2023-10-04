@@ -6,7 +6,8 @@ load("@makeheaders//src:RULES.bzl", "makeheaders")
 
 load("//config/cc:CONFIG.bzl",
      COPTS = "BASE_COPTS",
-     DEFINES = "BASE_DEFINES")
+     DEFINES = "BASE_DEFINES",
+     "BASE_DEPS")
 
 TOOLCHAINS = ["//:repo_paths"]
 
@@ -19,7 +20,7 @@ cc_library(
         "findlib_map_reduce.c",
         ":mkhdrs"
     ],
-    deps = [
+    deps = BASE_DEPS + [
         "@liblogc//src:logc",
         "@uthash//src:uthash",
     ],
@@ -39,5 +40,14 @@ makeheaders(
         "findlib_map_reduce.c",
         # "//src:utils.c"
     ],
-    additional_srcs = ["//src:ansi_colors.h"]
+    additional_srcs = [
+        "//src:ansi_colors.h",
+        "//src:findlibc_debug.c"
+    ] + select({
+        "//config/compilation_mode:fastbuild?": [
+            "//src:macros_debug.h"
+        ],
+        "//conditions:default": ["//src:macros_ndebug.h"]
+    }),
+
 )

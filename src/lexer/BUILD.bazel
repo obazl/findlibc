@@ -6,7 +6,8 @@ load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//config/cc:CONFIG.bzl",
      "BASE_COPTS",
-     "BASE_DEFINES")
+     "BASE_DEFINES",
+     "BASE_DEPS")
 
 COPTS = BASE_COPTS
 DEFINES = BASE_DEFINES
@@ -30,7 +31,7 @@ cc_library(
         ],
         "//conditions:default":   []
     }),
-    deps = [
+    deps = BASE_DEPS + [
         "@liblogc//src:logc",
         "@uthash//src:uthash",
     ],

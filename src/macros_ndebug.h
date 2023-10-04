@@ -1,9 +1,8 @@
-#define META_TRACE_ENTRY
 #define TRACE_ENTRY
 #define TRACE_LOG(fmt, ...)
 #define TRACE_EXIT
 #define TRACE_ENTRY_MSG(fmt, ...)
-#define TRACE_S7_DUMP(msg, x)
+/* #define TRACE_S7_DUMP(msg, x) */
 #define DUMP_PREFIX(pfx)
 
 #include "log.h"

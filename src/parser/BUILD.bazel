@@ -6,10 +6,10 @@ load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//config/cc:CONFIG.bzl",
      COPTS   = "BASE_COPTS",
+     DEPS    = "BASE_DEPS",
      "BASE_DEFINES")
 
-DEFINES = BASE_DEFINES + [
-]
+DEFINES = BASE_DEFINES
 
 TOOLCHAINS = ["//:repo_paths"]
 
@@ -36,7 +36,7 @@ cc_library(
         ":meta_syntaxis",
         ":mkhdrs",
     ],
-    deps = [
+    deps = DEPS + [
         "@liblogc//src:logc",
         "@semverc//src:semverc",
         "@uthash//src:uthash",
@@ -48,9 +48,6 @@ cc_library(
         "-I$(@uthash)/src",
         "-I$(GENDIR)/$(@)/src/parser",
     ],
-    defines = ["DEBUG_$(COMPILATION_MODE)"],
-    # defines = ["DEBUG=$(COMPILATION_MODE)==fastbuild"],
-    # defines = ["DEBUG="],
     local_defines = DEFINES + select({
         ":yydebug?": ["YYDEBUG"], "//conditions:default":   []
     }) + select({
@@ -82,7 +79,7 @@ cc_library(
         ],
         "//conditions:default": []
     }),
-    deps = [
+    deps = DEPS + [
         "@liblogc//src:logc",
         "@semverc//src:semverc",
         "@uthash//src:uthash",

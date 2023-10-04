@@ -7,13 +7,15 @@ load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//config/cc:CONFIG.bzl",
      "BASE_COPTS",
-     "BASE_DEFINES")
+     "BASE_DEFINES",
+     "BASE_DEPS")
 
 COPTS = BASE_COPTS
-DEFINES = BASE_DEFINES + ["TRACING"]
+DEFINES = BASE_DEFINES
 
 exports_files(glob([
     "ansi_colors.h",
+    "findlibc_debug.c",
     "macros_debug.h", "macros_ndebug.h",
 ]))
 
@@ -21,9 +23,8 @@ exports_files(glob([
 cc_library(
     name = "findlibc",
     # alwayslink = True,
-    srcs = [ ],
     hdrs = ["findlibc.h"],
-    deps = [
+    deps = BASE_DEPS + [
         # "//src/lexer:meta_lexer",
         "//src/parser:meta_parser",
         "//src/map_reduce:findlib_map_reduce",
@@ -32,53 +33,26 @@ cc_library(
         # "//src/lexer:meta_lexer",
         # "//src/parser:meta_parser",
     ],
+    local_defines = DEFINES,
     visibility = ["//visibility:public"]
 )
 
-#     # data  = [
-#     #     "//coswitch/templates:ocaml_bigarray.BUILD",
-#     #     "//coswitch/templates:ocaml_c_api.BUILD",
-#     #     "//coswitch/templates:ocaml_compiler-libs.BUILD",
-#     #     "//coswitch/templates/compiler_libs:bytecomp.BUILD",
-#     #     "//coswitch/templates/compiler_libs:common.BUILD",
-#     #     "//coswitch/templates/compiler_libs:optcomp.BUILD",
-#     #     "//coswitch/templates/compiler_libs:toplevel.BUILD",
-#     #     "//coswitch/templates/compiler_libs:native_toplevel.BUILD",
-#     #     "//coswitch/templates:ocaml_dynlink.BUILD",
-#     #     "//coswitch/templates:ocaml_num.BUILD",
-#     #     "//coswitch/templates:ocaml_ocamldoc.BUILD",
-#     #     "//coswitch/templates:ocaml_runtime.BUILD",
-#     #     "//coswitch/templates:ocaml_stdlib.BUILD",
-#     #     "//coswitch/templates:ocaml_str.BUILD",
-
-#     #     "//coswitch/templates/platforms:BUILD.bazel",
-#     #     "//coswitch/templates/platforms/build:BUILD.bazel",
-#     #     "//coswitch/templates/platforms/target:BUILD.bazel",
-
-#     #     "//coswitch/templates:toolchain/adapters/local.BUILD",
-#     #     "//coswitch/templates:toolchain/adapters/local.BUILD.mustache",
-#     #     "//coswitch/templates:toolchain/adapters/linux/x86_64.BUILD",
-#     #     "//coswitch/templates:toolchain/adapters/linux/arm.BUILD",
-#     #     "//coswitch/templates:toolchain/adapters/macos/x86_64.BUILD",
-#     #     "//coswitch/templates:toolchain/adapters/macos/arm.BUILD",
-#     #     "//coswitch/templates:toolchain/profiles/profiles.BUILD",
-#     #     "//coswitch/templates:toolchain/selectors/local.BUILD",
-#     #     "//coswitch/templates:toolchain/selectors/linux/x86_64.BUILD",
-#     #     "//coswitch/templates:toolchain/selectors/linux/arm.BUILD",
-#     #     "//coswitch/templates:toolchain/selectors/macos/arm.BUILD",
-#     #     "//coswitch/templates:toolchain/selectors/macos/x86_64.BUILD",
-#     #     # "//coswitch/templates/host/bazel:BUILD.bazel",
-#     #     # "//coswitch/templates/host/build:BUILD.bazel",
-#     #     # "//coswitch/templates/host/target:BUILD.bazel",
-#     #     "//coswitch/templates:ocaml_threads.BUILD",
-#     #     "//coswitch/templates:ocaml_unix.BUILD",
-#     # ],
-#     # ] + select({
-#     #     "//config/compilation_mode:dbg?": ["//src:debug"],
-#     #     "//conditions:default": []
-#     # }),
-#     visibility = ["//visibility:public"]
-# )
+cc_library(
+    name = "findlibc_debug",
+    alwayslink = True,
+    srcs = ["findlibc_debug.c"],
+    # deps = [
+    #     # "//src/lexer:meta_lexer",
+    #     "//src/parser:meta_parser",
+    #     "//src/map_reduce:findlib_map_reduce",
+    #     "@liblogc//src:logc",
+    #     "@uthash//src:uthash",
+    #     # "//src/lexer:meta_lexer",
+    #     # "//src/parser:meta_parser",
+    # ],
+    local_defines = DEFINES,
+    visibility = ["//visibility:public"]
+)
 
 makeheaders(
     name = "mkhdrs_export",
@@ -98,6 +72,7 @@ makeheaders(
     ] + select({
         # "@cc_config//profile:dev?": [
         "//config/compilation_mode:fastbuild?": [
+            ":findlibc_debug.c",
             "//src/parser:meta_debugging.c",
         ],
         "//conditions:default": []

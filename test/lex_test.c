@@ -23,6 +23,11 @@
 
 #include "log.h"
 
+#if defined(DEBUG_fastbuild)
+extern int  findlibc_debug;
+extern bool findlibc_trace;
+#endif
+
 LOCAL bool _is_empty(const char *s)
 {
   while (*s) {
@@ -182,8 +187,14 @@ int main(int argc, char *argv[])
     UT_string *findlib_file;
     utstring_new(findlib_file);
 
-    while ((opt = getopt(argc, argv, "f:hv")) != -1) {
+    while ((opt = getopt(argc, argv, "dtf:hv")) != -1) {
         switch (opt) {
+        case 'd':
+            findlibc_debug++;
+            break;
+        case 't':
+            findlibc_trace = true;
+            break;
         case 'f':
             /* BUILD.bazel or BUILD file */
             utstring_printf(findlib_file, "%s", optarg);

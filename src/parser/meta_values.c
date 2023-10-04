@@ -16,8 +16,8 @@ extern const UT_icd ut_str_icd;
 #endif
 
 #if defined(DEBUG_fastbuild)
-extern int  findlib_debug;
-extern bool findlib_trace;
+extern int  findlibc_debug;
+extern bool findlibc_trace;
 #endif
 
 #if EXPORT_INTERFACE

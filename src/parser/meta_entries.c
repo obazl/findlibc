@@ -11,8 +11,8 @@
 #include "meta_entries.h"
 
 #if defined(DEBUG)
-extern int  findlib_debug;
-extern bool findlib_trace;
+extern int  findlibc_debug;
+extern bool findlibc_trace;
 #endif
 
 /* **************************************************************** */
@@ -130,7 +130,7 @@ void normalize_entries(obzl_meta_entries *entries, obzl_meta_entry *_entry)
 #endif
 
     int ct = obzl_meta_entries_count(entries);
-    /* LOG_TRACE(0, "entries ct: %d", ct); */
+    LOG_DEBUG(0, "entries ct: %d", ct);
     obzl_meta_entry *e = NULL;
 
     bool matched = false;

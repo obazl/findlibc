@@ -9,8 +9,8 @@
 #include "log.h"
 
 /* #if defined(DEBUG_fastbuild) */
-extern int  findlib_debug;
-extern bool findlib_trace;
+extern int  findlibc_debug;
+extern bool findlibc_trace;
 /* #endif */
 
 #include "meta_settings.h"
