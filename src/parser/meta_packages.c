@@ -140,6 +140,8 @@ EXPORT obzl_meta_property *obzl_meta_package_property(obzl_meta_package *_pkg, c
     TRACE_ENTRY;
     TRACE_LOG("  prop name: %s", _name);
 
+    if (_pkg->entries == NULL) return NULL;
+
     /* utarray_find requires a sort; not worth the cost */
     obzl_meta_entry *e = NULL;
     for (int i = 0; i < obzl_meta_entries_count(_pkg->entries); i++) {
@@ -389,9 +391,8 @@ EXPORT semver_t *findlib_pkg_version(struct obzl_meta_package *_pkg)
             /* semversion.major); */
         }
     } else {
-        /* LOG_WARN(0, "    version: 0.0.0 (default)"); */
-        /* version = "0.0.0"; */
-        /* return; //FIXME ??? e.g. dune META has no version */
+        LOG_WARN(0, "version: %s (default)", "0.0.0");
+        semver_parse("0.0.0", semversion);
     }
     /* return (char*)version; */
     TRACE_EXIT;
@@ -410,6 +411,8 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
     TRACE_ENTRY;
     /* DUMP_PKG(0, _pkg); */
     TRACE_LOG("  pkg name: %s", _pkg->name);
+
+    if (_pkg->entries == NULL) return NULL;
 
     UT_array *pkg_deps;
     utarray_new(pkg_deps, &ut_str_icd);

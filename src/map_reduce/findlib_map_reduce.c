@@ -87,12 +87,13 @@ char **tc;
 /* void handle_findlib_pkg(// char *opam_switch_lib, */
 
 #if INTERFACE
-typedef void (*findlib_handler) (char *site_lib, char *pkg_dir, void *extra);
+typedef void (*findlib_handler) (char *switch_pfx, char *site_lib, char *pkg_dir, void *extra);
 #endif
 
 /* FIXME: pass fn ptr arg 'findlib_site_lib' */
 EXPORT void findlib_map(UT_array *opam_pending_deps,
                         UT_array *opam_exclude_pkgs,
+                        char *switch_pfx,
                         char *findlib_site_lib,
                         findlib_handler _handler,
                         void *extra)
@@ -186,7 +187,7 @@ EXPORT void findlib_map(UT_array *opam_pending_deps,
         if (p == NULL)
             utarray_push_back(opam_completed_deps, &next);
 
-        _handler(findlib_site_lib, next, extra);
+        _handler(switch_pfx, findlib_site_lib, next, extra);
 
         free(next);
     }

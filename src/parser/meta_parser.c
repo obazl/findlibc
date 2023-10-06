@@ -19,7 +19,7 @@ LOCAL bool _is_empty(const char *s)
   return true;
 }
 
-char *package_name_from_file_name(char *_fname)
+EXPORT char *package_name_from_file_name(char *_fname)
 {
     char *fname = strdup(_fname);
     char *res;
