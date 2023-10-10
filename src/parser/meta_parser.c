@@ -7,6 +7,8 @@
 
 #include "meta_parser.h"
 
+const char *findlibc_version = FINDLIBC_VERSION;
+
 struct obzl_meta_package *MAIN_PKG;
 
 LOCAL bool _is_empty(const char *s)

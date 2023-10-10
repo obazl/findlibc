@@ -49,18 +49,18 @@ cc_binary(
 )
 
 ##########
-cc_binary(
-    name  = "crawl_test",
-    linkstatic = 1,
-    srcs  = ["crawler_test.c", ":mkhdrs"],
-    deps = DEPS   + ["//src:findlibc"],
-    copts = COPTS + [
-        "-I$(GENDIR)/$(@)/src",
-        "-I$(GENDIR)/$(@)/test",
-    ],
-    local_defines = DEFINES,
-    toolchains = TOOLCHAINS,
-)
+# cc_binary(
+#     name  = "crawl_test",
+#     linkstatic = 1,
+#     srcs  = ["crawler_test.c", ":mkhdrs"],
+#     deps = DEPS   + ["//src:findlibc"],
+#     copts = COPTS + [
+#         "-I$(GENDIR)/$(@)/src",
+#         "-I$(GENDIR)/$(@)/test",
+#     ],
+#     local_defines = DEFINES,
+#     toolchains = TOOLCHAINS,
+# )
 
 ################################################################
 # cc_binary(

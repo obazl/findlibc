@@ -47,6 +47,7 @@ cc_library(
         "-I$(@semverc)/src",
         "-I$(@uthash)/src",
         "-I$(GENDIR)/$(@)/src/parser",
+        "'-D$(MODULE_NAME)_VERSION=\"$(MODULE_VERSION)\"'"
     ],
     local_defines = DEFINES + select({
         ":yydebug?": ["YYDEBUG"], "//conditions:default":   []
