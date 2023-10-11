@@ -399,6 +399,359 @@ EXPORT semver_t *findlib_pkg_version(struct obzl_meta_package *_pkg)
     return semversion;
 }
 
+/** @brief Returns all predicate-free "ppx_runtime_deps" pkgs.
+
+    @param subpkgs true means also include direct deps
+    of all subpkgs as well
+
+ */
+EXPORT UT_array *findlib_pkg_codeps(struct obzl_meta_package *_pkg,
+                                  bool subpkgs)
+{
+    TRACE_ENTRY;
+    /* DUMP_PKG(0, _pkg); */
+    TRACE_LOG("  pkg name: %s", _pkg->name);
+
+    if (_pkg->entries == NULL) return NULL;
+
+    UT_array *pkg_deps;
+    utarray_new(pkg_deps, &ut_str_icd);
+
+    /* char *s = "testdep"; */
+    /* utarray_push_back(pkg_deps, &s); */
+
+    obzl_meta_entries *entries = obzl_meta_package_entries(_pkg);
+
+    // obzl_meta_entries->list is UT_array of obzl_meta_entry
+    obzl_meta_entry *p;
+    for(p=(obzl_meta_entry*)utarray_front(entries->list);
+        p!=NULL;
+        p=(obzl_meta_entry*)utarray_next(entries->list,p)) {
+        if (p->type == OMP_PACKAGE) {
+            /* LOG_DEBUG(0, "  pkg entry: %s", p->package->name); */
+            findlib_subpkg_codeps(p->package, subpkgs, pkg_deps);
+        }
+  }
+
+    char *property = "ppx_runtime_deps";
+    struct obzl_meta_property *deps_prop = NULL;
+    deps_prop = obzl_meta_entries_property(entries, property);
+    if ( deps_prop == NULL ) {
+        LOG_WARN(0, "Prop '%s' not found for pkg: %s.", property, _pkg->name);
+        return pkg_deps;
+    }
+
+    obzl_meta_settings *settings = obzl_meta_property_settings(deps_prop);
+    obzl_meta_setting *setting = NULL;
+
+    int settings_ct = obzl_meta_settings_count(settings);
+    if (settings_ct == 0) {
+        /* LOG_INFO(0, "No settings for %s", obzl_meta_property_name(deps_prop)); */
+        return pkg_deps;
+    } else {
+        /* LOG_INFO(0, "settings count: %d", settings_ct); */
+    }
+
+    int settings_no_ppx_driver_ct = obzl_meta_settings_flag_count(settings, "ppx_driver", false);
+
+    settings_ct -= settings_no_ppx_driver_ct;
+
+    /* LOG_INFO(0, "settings count w/o ppx_driver: %d", settings_ct); */
+
+    if (settings_ct == 0) {
+        /* LOG_INFO(0, "No deps for %s", obzl_meta_property_name(deps_prop)); */
+        return pkg_deps;
+    }
+
+    obzl_meta_values *vals;
+    obzl_meta_value *dep_name = NULL;
+
+    UT_string *condition_name;
+    utstring_new(condition_name);
+
+    LOG_DEBUG(3, "iterating settings", "");
+    for (int i = 0; i < settings_ct; i++) {
+        setting = obzl_meta_settings_nth(settings, i);
+        LOG_DEBUG(3, "setting %d", i+1);
+#if defined(DEBUG_fastbuild)
+        if (findlibc_debug > 3) dump_setting(0, setting);
+#endif
+        obzl_meta_flags *flags = obzl_meta_setting_flags(setting);
+        /* int flags_ct = 0; */
+        if (flags != NULL) {
+            /* register_flags(flags); // why? */
+            //int flags_ct =   /* -Wunused-variable */
+            obzl_meta_flags_count(flags);
+            /* LOG_DEBUG(0, "flags_ct: %d", flags_ct); */
+        }
+
+        if (obzl_meta_flags_has_flag(flags, "ppx_driver", false)) {
+            continue;
+        }
+
+        /* bool has_conditions; */
+        /* if (flags == NULL) */
+        /*     utstring_printf(condition_name, "//conditions:default"); */
+        /* else { */
+        /*     has_conditions = obzl_meta_flags_to_selection_label(flags, condition_name); */
+        /*     (void)has_conditions; /\* prevent [-Wunused-but-set-variable] *\/ */
+        /* } */
+
+        /* char *condition_comment = obzl_meta_flags_to_comment(flags); */
+        /* LOG_DEBUG(0, "condition_comment: %s", condition_comment); */
+
+        /* 'requires' usually has no flags; when it does, empirically we find only */
+        /*   ppx pkgs: ppx_driver, -ppx_driver */
+        /*   pkg 'batteries': requires(mt) */
+        /*   pkg 'num': requires(toploop) */
+        /*   pkg 'findlib': requires(toploop), requires(create_toploop) */
+
+        /* Multiple settings on 'requires' means multiple flags; */
+        /* empirically, this only happens for ppx packages, typically as */
+        /* requires(-ppx_driver,-custom_ppx) */
+        /* the (sole?) exception is */
+        /*   pkg 'threads': requires(mt,mt_vm), requires(mt,mt_posix) */
+
+        /* if (settings_ct > 1) { */
+        /*     fprintf(ostream, "%*s\"X%s%s\": [ ## predicates: %s\n", */
+        /*             (1+level)*spfactor, sp, */
+        /*             utstring_body(condition_name), */
+        /*             (has_conditions)? "" : "", */
+        /*             condition_comment); */
+        /* } */
+
+        vals = obzl_meta_setting_values(setting);
+        /* vals = resolve_setting_values(setting, flags, settings); */
+        /* vals = obzl_meta_setting_values(setting); */
+        LOG_DEBUG(3, "vals ct: %d", obzl_meta_values_count(vals));
+#if defined(DEBUG_fastbuild)
+        if (findlibc_debug > 3) dump_values(0, vals);
+#endif
+        /* now we handle UPDATE settings */
+
+        LOG_DEBUG(3, "iterating values", "");
+        char **p = NULL;        /* for searching */
+        for (int j = 0; j < obzl_meta_values_count(vals); j++) {
+            dep_name = obzl_meta_values_nth(vals, j);
+            LOG_DEBUG(3, "property val[%d]: '%s'", j, *dep_name);
+
+            char *s = strdup((char*)*dep_name);
+            LOG_DEBUG(3, "DEP: '%s'", s);
+            /* utarray_push_back(pkg_deps, &s); */
+
+            /* utarray_push_back(pkg_deps, &s); */
+
+            /* FIXME: drop trailing dot segs - only record toplevels */
+            char *dot = strchr(s, '/');
+            LOG_DEBUG(3, "DOT: %s", dot);
+
+            if (dot) {
+                *dot = '\0';
+            }
+
+            /* LOG_DEBUG(0, "DEP DESEGMENTED: '%s'", s); */
+
+            /* if (subpkgs) { */
+            /*     utarray_push_back(pkg_deps, (char**)dep_name); */
+            /* } else { */
+            if (strcmp(s, _pkg->name) != 0) {
+                p = NULL;
+                /* FIXME: can we avoid this sort? */
+                utarray_sort(pkg_deps,strsort);
+                p = (char**)utarray_find(pkg_deps, &s, strsort);
+                if (p == NULL) {
+                   utarray_push_back(pkg_deps, &s);
+                }
+            }
+            /* } */
+/*                 utarray_sort(pending_deps,strsort); /\* FIXME: can we avoid this? *\/ */
+/*                 p = (char**)utarray_find(pending_deps, &s, strsort); */
+/*                 if (p != NULL) { */
+/*                         LOG_DEBUG(0, " pending dep already added: %s", *p); */
+/*                 } else { */
+/*                     LOG_DEBUG(0, " adding new pending dep: %s", s); */
+/*                     utarray_push_back(pending_deps, &s); */
+/*                 } */
+/*             } */
+        }
+        /* free(condition_comment); */
+    }
+    TRACE_EXIT;
+    return pkg_deps;
+}
+
+EXPORT UT_array *findlib_subpkg_codeps(struct obzl_meta_package *_pkg,
+                                       bool subpkgs,
+                                       UT_array *pkg_deps)
+{
+    TRACE_ENTRY;
+    /* DUMP_PKG(0, _pkg); */
+
+    /* UT_array *pkg_deps; */
+    /* utarray_new(pkg_deps, &ut_str_icd); */
+
+    /* char *s = "testdep"; */
+    /* utarray_push_back(pkg_deps, &s); */
+
+    obzl_meta_entries *entries = obzl_meta_package_entries(_pkg);
+
+    // obzl_meta_entries->list is UT_array of obzl_meta_entry
+    /* LOG_DEBUG(0, "findlib_subpkg_deps: %s", _pkg->name); */
+
+    obzl_meta_entry *p;
+    for(p=(obzl_meta_entry*)utarray_front(entries->list);
+        p!=NULL;
+        p=(obzl_meta_entry*)utarray_next(entries->list,p)) {
+        if (p->type == OMP_PACKAGE) {
+            /* LOG_DEBUG(0, "  pkg entry: %s", p->package->name); */
+            findlib_subpkg_deps(p->package, subpkgs, pkg_deps);
+        }
+  }
+
+    char *property = "ppx_runtime_deps";
+    struct obzl_meta_property *deps_prop = NULL;
+    deps_prop = obzl_meta_entries_property(entries, property);
+    if ( deps_prop == NULL ) {
+        LOG_WARN(0, "Prop '%s' not found for pkg: %s.", property, _pkg->name);
+        return pkg_deps;
+    }
+
+    obzl_meta_settings *settings = obzl_meta_property_settings(deps_prop);
+    obzl_meta_setting *setting = NULL;
+
+    int settings_ct = obzl_meta_settings_count(settings);
+    if (settings_ct == 0) {
+        LOG_INFO(3, "No settings for %s", obzl_meta_property_name(deps_prop));
+        return pkg_deps;
+    } else {
+        LOG_INFO(3, "settings count: %d", settings_ct);
+    }
+
+    int settings_no_ppx_driver_ct = obzl_meta_settings_flag_count(settings, "ppx_driver", false);
+
+    settings_ct -= settings_no_ppx_driver_ct;
+
+    LOG_INFO(3, "settings count w/o ppx_driver: %d", settings_ct);
+
+    if (settings_ct == 0) {
+        LOG_INFO(3, "No deps for %s", obzl_meta_property_name(deps_prop));
+        return pkg_deps;
+    }
+
+    obzl_meta_values *vals;
+    obzl_meta_value *dep_name = NULL;
+
+    UT_string *condition_name;
+    utstring_new(condition_name);
+
+    LOG_DEBUG(3, "iterating settings", "");
+    for (int i = 0; i < settings_ct; i++) {
+        setting = obzl_meta_settings_nth(settings, i);
+#if defined(DEBUG_fastbuild)
+        LOG_DEBUG(3, "setting %d", i+1);
+        if (findlibc_debug > 3) dump_setting(0, setting);
+#endif
+        obzl_meta_flags *flags = obzl_meta_setting_flags(setting);
+        /* int flags_ct = 0; */
+        if (flags != NULL) {
+            /* register_flags(flags); // why? */
+            //int flags_ct =   /* -Wunused-variable */
+            obzl_meta_flags_count(flags);
+            /* LOG_DEBUG(0, "flags_ct: %d", flags_ct); */
+        }
+
+        if (obzl_meta_flags_has_flag(flags, "ppx_driver", false)) {
+            continue;
+        }
+
+        /* bool has_conditions; */
+        /* if (flags == NULL) */
+        /*     utstring_printf(condition_name, "//conditions:default"); */
+        /* else { */
+        /*     has_conditions = obzl_meta_flags_to_selection_label(flags, condition_name); */
+        /*     (void)has_conditions; /\* prevent [-Wunused-but-set-variable] *\/ */
+        /* } */
+
+        /* char *condition_comment = obzl_meta_flags_to_comment(flags); */
+        /* LOG_DEBUG(0, "condition_comment: %s", condition_comment); */
+
+        /* 'requires' usually has no flags; when it does, empirically we find only */
+        /*   ppx pkgs: ppx_driver, -ppx_driver */
+        /*   pkg 'batteries': requires(mt) */
+        /*   pkg 'num': requires(toploop) */
+        /*   pkg 'findlib': requires(toploop), requires(create_toploop) */
+
+        /* Multiple settings on 'requires' means multiple flags; */
+        /* empirically, this only happens for ppx packages, typically as */
+        /* requires(-ppx_driver,-custom_ppx) */
+        /* the (sole?) exception is */
+        /*   pkg 'threads': requires(mt,mt_vm), requires(mt,mt_posix) */
+
+        /* if (settings_ct > 1) { */
+        /*     fprintf(ostream, "%*s\"X%s%s\": [ ## predicates: %s\n", */
+        /*             (1+level)*spfactor, sp, */
+        /*             utstring_body(condition_name), */
+        /*             (has_conditions)? "" : "", */
+        /*             condition_comment); */
+        /* } */
+
+        vals = obzl_meta_setting_values(setting);
+        /* vals = resolve_setting_values(setting, flags, settings); */
+        /* vals = obzl_meta_setting_values(setting); */
+        LOG_DEBUG(3, "vals ct: %d", obzl_meta_values_count(vals));
+#if defined(DEBUG_fastbuild)
+        if (findlibc_debug > 2) dump_values(0, vals);
+#endif
+        /* now we handle UPDATE settings */
+
+        LOG_DEBUG(2, "iterating values", "");
+        char **p = NULL;        /* for searching */
+        for (int j = 0; j < obzl_meta_values_count(vals); j++) {
+            dep_name = obzl_meta_values_nth(vals, j);
+            LOG_DEBUG(2, "property val[%d]: '%s'", j, *dep_name);
+
+            char *s = strdup((char*)*dep_name);
+            LOG_DEBUG(2, "DEP: '%s'", s);
+            /* utarray_push_back(pkg_deps, &s); */
+
+            /* utarray_push_back(pkg_deps, &s); */
+
+            /* FIXME: drop trailing dot segs - only record toplevels */
+            char *dot = strchr(s, '/');
+            LOG_DEBUG(2, "DOT: %s", dot);
+
+            if (dot) {
+                *dot = '\0';
+            }
+
+            LOG_DEBUG(2, "CODEP DESEGMENTED: '%s'", s);
+
+            /* if (subpkgs) { */
+            /*     utarray_push_back(pkg_deps, (char**)dep_name); */
+            /* } else { */
+                p = NULL;
+                /* FIXME: can we avoid this sort? */
+                utarray_sort(pkg_deps,strsort);
+                p = (char**)utarray_find(pkg_deps, &s, strsort);
+                if (p == NULL) {
+                    utarray_push_back(pkg_deps, &s);
+                }
+            /* } */
+/*                 utarray_sort(pending_deps,strsort); /\* FIXME: can we avoid this? *\/ */
+/*                 p = (char**)utarray_find(pending_deps, &s, strsort); */
+/*                 if (p != NULL) { */
+                        /* LOG_DEBUG(0, " pending dep already added: %s", *p); */
+/*                 } else { */
+/*                     LOG_DEBUG(0, " adding new pending dep: %s", s); */
+/*                     utarray_push_back(pending_deps, &s); */
+/*                 } */
+/*             } */
+        }
+        /* free(condition_comment); */
+    }
+    return pkg_deps;
+}
+
 /** @brief Returns all predicate-free "required" pkgs.
 
     @param subpkgs true means also include direct deps
