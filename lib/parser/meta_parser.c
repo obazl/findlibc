@@ -3,7 +3,7 @@
 #include <libgen.h>
 #include <stdio.h>
 
-#include "log.h"
+#include "liblogc.h"
 
 #include "meta_parser.h"
 

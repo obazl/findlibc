@@ -1,13 +1,11 @@
-load("@makeheaders//src:RULES.bzl", "makeheaders")
+load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
 
 load("//config/cc:CONFIG.bzl",
-     "BASE_DEPS",
      "BASE_COPTS",
-     INCLUDE_PATHS = "BASE_INCLUDE_PATHS",
-     DEFINES = "BASE_DEFINES")
+     "BASE_DEFINES")
 
-COPTS = BASE_COPTS + INCLUDE_PATHS
-TOOLCHAINS = ["//:test_repo_paths"]
+COPTS = BASE_COPTS
+TOOLCHAINS = ["//:test_module_profiles"]
 
 ##########
 cc_binary(
@@ -17,19 +15,18 @@ cc_binary(
         "meta_parse.c",
         ":mkhdrs"
     ],
-    deps = BASE_DEPS + [
-        # "@liblogc//src:logc",
-        "@uthash//src:uthash",
-        "//src:findlibc"
+    deps = [
+        "@liblogc//lib:logc",
+        "@uthash//lib:uthash",
+        "//lib:findlibc"
     ],
     copts = COPTS + [
-        "-I$(@uthash)/src",
         "-I$(GENDIR)/$(@)/src",
         "-I$(GENDIR)/$(@)/test/app",
-        "-I$(@liblogc)/src",
-        "-I$(@uthash)/src"
+        # "-I$(@liblogc)/lib",
+        # "-I$(@uthash)/lib"
     ],
-    local_defines = DEFINES,
+    local_defines = BASE_DEFINES,
     toolchains = TOOLCHAINS,
 )
 
@@ -40,7 +37,7 @@ makeheaders(
         "meta_parse.c",
     ],
     # additional_srcs = [
-    #     "//src/lexer:meta_lexis.c",
-    #     "//src/parser:meta_syntaxis.c",
+    #     "//lib/lexer:meta_lexis.c",
+    #     "//lib/parser:meta_syntaxis.c",
     # ],
 )

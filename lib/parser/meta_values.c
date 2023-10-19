@@ -3,7 +3,7 @@
 
 #include "utarray.h"
 #include "uthash.h"
-#include "log.h"
+#include "liblogc.h"
 
 #include "meta_values.h"
 
@@ -15,7 +15,7 @@ extern const UT_icd ut_str_icd;
 /* extern char *sp; */
 #endif
 
-#if defined(DEBUG_fastbuild)
+#if defined(PROFILE_fastbuild)
 extern int  findlibc_debug;
 extern bool findlibc_trace;
 #endif

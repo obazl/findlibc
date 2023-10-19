@@ -1,9 +1,6 @@
 #include <stdbool.h>
 
-/* #include "log.h" */
-#if EXPORT_INTERFACE
 #include "semver.h"
-#endif
 #include "utarray.h"
 #include "utstring.h"
 #include "utstrsort.h"
@@ -13,10 +10,21 @@
 #if EXPORT_INTERFACE
 #include "uthash.h"
 
-#if defined(DEBUG_fastbuild)
-extern int  findlibc_debug;
-extern bool findlibc_trace;
+#if defined(PROFILE_fastbuild)
+#define DEBUG_LEVEL findlibc_debug
+extern int  DEBUG_LEVEL;
+#define TRACE_FLAG findlibc_trace
+extern bool TRACE_FLAG;
 #endif
+
+/* findlib_version_t must match semver_t */
+typedef struct findlib_version_s {
+  int major;
+  int minor;
+  int patch;
+  char * metadata;
+  char * prerelease;
+} findlib_version_t;
 
 struct obzl_meta_package {
     char *name;                 /* uthash key */
@@ -364,11 +372,11 @@ EXPORT int pkg_deps(struct obzl_meta_package *_pkg,
     return 0;
 }
 
-EXPORT semver_t *findlib_pkg_version(struct obzl_meta_package *_pkg)
+EXPORT findlib_version_t *findlib_pkg_version(struct obzl_meta_package *_pkg)
 {
     TRACE_ENTRY;
     //FIXME: ocaml-compiler-libs META shows no version for
-    //topleve, but each subpkg has a version string.
+    //toplevel, but each subpkg has a version string.
     semver_t *semversion
         = (semver_t*)malloc(sizeof(semver_t));
     obzl_meta_value version;
@@ -396,7 +404,7 @@ EXPORT semver_t *findlib_pkg_version(struct obzl_meta_package *_pkg)
     }
     /* return (char*)version; */
     TRACE_EXIT;
-    return semversion;
+    return (findlib_version_t *)semversion;
 }
 
 /** @brief Returns all predicate-free "ppx_runtime_deps" pkgs.
@@ -473,7 +481,7 @@ EXPORT UT_array *findlib_pkg_codeps(struct obzl_meta_package *_pkg,
     for (int i = 0; i < settings_ct; i++) {
         setting = obzl_meta_settings_nth(settings, i);
         LOG_DEBUG(3, "setting %d", i+1);
-#if defined(DEBUG_fastbuild)
+#if defined(PROFILE_fastbuild)
         if (findlibc_debug > 3) dump_setting(0, setting);
 #endif
         obzl_meta_flags *flags = obzl_meta_setting_flags(setting);
@@ -524,7 +532,7 @@ EXPORT UT_array *findlib_pkg_codeps(struct obzl_meta_package *_pkg,
         /* vals = resolve_setting_values(setting, flags, settings); */
         /* vals = obzl_meta_setting_values(setting); */
         LOG_DEBUG(3, "vals ct: %d", obzl_meta_values_count(vals));
-#if defined(DEBUG_fastbuild)
+#if defined(PROFILE_fastbuild)
         if (findlibc_debug > 3) dump_values(0, vals);
 #endif
         /* now we handle UPDATE settings */
@@ -647,7 +655,7 @@ EXPORT UT_array *findlib_subpkg_codeps(struct obzl_meta_package *_pkg,
     LOG_DEBUG(3, "iterating settings", "");
     for (int i = 0; i < settings_ct; i++) {
         setting = obzl_meta_settings_nth(settings, i);
-#if defined(DEBUG_fastbuild)
+#if defined(PROFILE_fastbuild)
         LOG_DEBUG(3, "setting %d", i+1);
         if (findlibc_debug > 3) dump_setting(0, setting);
 #endif
@@ -699,7 +707,7 @@ EXPORT UT_array *findlib_subpkg_codeps(struct obzl_meta_package *_pkg,
         /* vals = resolve_setting_values(setting, flags, settings); */
         /* vals = obzl_meta_setting_values(setting); */
         LOG_DEBUG(3, "vals ct: %d", obzl_meta_values_count(vals));
-#if defined(DEBUG_fastbuild)
+#if defined(PROFILE_fastbuild)
         if (findlibc_debug > 2) dump_values(0, vals);
 #endif
         /* now we handle UPDATE settings */
@@ -826,7 +834,7 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
     for (int i = 0; i < settings_ct; i++) {
         setting = obzl_meta_settings_nth(settings, i);
         LOG_DEBUG(3, "setting %d", i+1);
-#if defined(DEBUG_fastbuild)
+#if defined(PROFILE_fastbuild)
         if (findlibc_debug > 3) dump_setting(0, setting);
 #endif
         obzl_meta_flags *flags = obzl_meta_setting_flags(setting);
@@ -877,7 +885,7 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
         /* vals = resolve_setting_values(setting, flags, settings); */
         /* vals = obzl_meta_setting_values(setting); */
         LOG_DEBUG(3, "vals ct: %d", obzl_meta_values_count(vals));
-#if defined(DEBUG_fastbuild)
+#if defined(PROFILE_fastbuild)
         if (findlibc_debug > 3) dump_values(0, vals);
 #endif
         /* now we handle UPDATE settings */
@@ -1000,7 +1008,7 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
     LOG_DEBUG(3, "iterating settings", "");
     for (int i = 0; i < settings_ct; i++) {
         setting = obzl_meta_settings_nth(settings, i);
-#if defined(DEBUG_fastbuild)
+#if defined(PROFILE_fastbuild)
         LOG_DEBUG(3, "setting %d", i+1);
         if (findlibc_debug > 3) dump_setting(0, setting);
 #endif
@@ -1052,7 +1060,7 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
         /* vals = resolve_setting_values(setting, flags, settings); */
         /* vals = obzl_meta_setting_values(setting); */
         LOG_DEBUG(3, "vals ct: %d", obzl_meta_values_count(vals));
-#if defined(DEBUG_fastbuild)
+#if defined(PROFILE_fastbuild)
         if (findlibc_debug > 2) dump_values(0, vals);
 #endif
         /* now we handle UPDATE settings */

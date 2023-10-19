@@ -1,17 +1,16 @@
 load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag", "string_setting")
 
-load("@makeheaders//src:RULES.bzl", "makeheaders")
+load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
 load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//config/cc:CONFIG.bzl",
      COPTS   = "BASE_COPTS",
      DEPS    = "BASE_DEPS",
-     "BASE_DEFINES")
+     "BASE_DEFINES",
+     "define_module_version")
 
-DEFINES = BASE_DEFINES
-
-TOOLCHAINS = ["//:repo_paths"]
+TOOLCHAINS = ["//:module_profiles"]
 
 exports_files(
     glob(
@@ -24,7 +23,6 @@ exports_files(
 ################################################################
 cc_library(
     name = "meta_parser",
-    # alwayslink = True,
     srcs = [
         "meta_parser.c",
         "meta_entries.c",
@@ -36,20 +34,18 @@ cc_library(
         ":meta_syntaxis",
         ":mkhdrs",
     ],
-    deps = DEPS + [
-        "@liblogc//src:logc",
+    implementation_deps = DEPS + [
+        "@liblogc//lib:logc",
         "@semverc//src:semverc",
-        "@uthash//src:uthash",
-        "//src/lexer:meta_lexer",
+        "@uthash//lib:uthash",
+        "//lib/lexer:meta_lexer",
     ],
     copts = COPTS + [
-        "-I$(@liblogc)/src",
         "-I$(@semverc)/src",
-        "-I$(@uthash)/src",
-        "-I$(GENDIR)/$(@)/src/parser",
-        "'-D$(MODULE_NAME)_VERSION=\"$(MODULE_VERSION)\"'"
+        "-I$(GENDIR)/$(@)/lib/parser",
     ],
-    local_defines = DEFINES + select({
+    defines       = BASE_DEFINES,
+    local_defines = define_module_version() + select({
         ":yydebug?": ["YYDEBUG"], "//conditions:default":   []
     }) + select({
         ":yytrace?": ["YYTRACE"], "//conditions:default":   []
@@ -60,7 +56,7 @@ cc_library(
     # DEBUG_LEX
     toolchains = TOOLCHAINS,
     visibility = [
-        "//src:__pkg__",
+        "//lib:__pkg__",
         "//test:__subpackages__"
     ]
 )
@@ -74,16 +70,15 @@ cc_library(
         ":mkhdrs",
         # ":meta_syntaxis_h",
     ] + select({
-        "//config/compilation_mode:fastbuild?": [
-        # "@cc_config//profile:dev?": [
+        "@makeheaders//compilation_mode:fastbuild": [
             "meta_debugging.c",
         ],
         "//conditions:default": []
     }),
     deps = DEPS + [
-        "@liblogc//src:logc",
+        "@liblogc//lib:logc",
         "@semverc//src:semverc",
-        "@uthash//src:uthash",
+        "@uthash//lib:uthash",
     ],
     copts = COPTS + [
         "-Wno-unused-parameter",
@@ -91,9 +86,7 @@ cc_library(
         "-Wno-visibility",
 
         "-I.", # do not delete
-        "-I$(@liblogc)/src",
         "-I$(@semverc)/src",
-        "-I$(@uthash)/src",
 
         ## NOTE: generated meta_syntaxis.c includes header with
         ## full bazel path, e.g.
@@ -104,9 +97,11 @@ cc_library(
         "-I.",
 
         ## for mkhdrs output:
-        "-I$(GENDIR)/$(@)/src/parser"
+        # "-I$(GENDIR)/$(@)/lib/parser"
     ],
-    defines = DEFINES + select({
+    includes = ["."],
+    defines = BASE_DEFINES,
+    local_defines = select({
         ":yydebug?": ["YYDEBUG", "TRACING"],
         "//conditions:default":   []
     }) + select({
@@ -130,13 +125,12 @@ lemon(
         "//conditions:default":   []
     }),
     visibility = [
-        "//src:__subpackages__",
+        "//lib:__subpackages__",
         "//test:__pkg__"
     ]
 )
 
 ################################################################
-
 makeheaders(
     name = "mkhdrs",
     hdrs_srcs = [
@@ -150,20 +144,22 @@ makeheaders(
         "meta_values.c",
         # "utils.c",
     ] + select({
-        "//config/compilation_mode:fastbuild?": [
+        "@makeheaders//compilation_mode:fastbuild": [
             "meta_debugging.c"],
         #"@cc_config//profile:dev?": ["meta_debugging.c"],
         "//conditions:default": []
     }),
     additional_srcs = [
         # no header outputs for these
-        "//src/lexer:meta_lexis.c",
-        "//src:ansi_colors.h",
+        "//lib/lexer:meta_lexis.c",
+        "@makeheaders//logging:ansi_colors.h",
     ] + select({
-        "//config/compilation_mode:fastbuild?": [
-            "//src:macros_debug.h"
+        "@makeheaders//compilation_mode:fastbuild": [
+            "@makeheaders//logging:macros_debug.h"
         ],
-        "//conditions:default": ["//src:macros_ndebug.h"]
+        "//conditions:default": [
+            "@makeheaders//logging:macros_ndebug.h"
+        ]
     }),
 )
 
@@ -174,18 +170,18 @@ makeheaders(
 #     ],
 #     additional_srcs = [
 #         # no header outputs for these
-#         "//src/lexer:meta_lexis.c",
+#         "//lib/lexer:meta_lexis.c",
 #         "meta_entries.c",
 #         "meta_packages.c",
 #         "meta_values.c",
-#         "//src:ansi_colors.h",
+#         "//lib:ansi_colors.h",
 #     ] + select({
 #         # "//config/profile:dev?": [
 #         # "@cc_config//profile:dev?": [
 #         "@cc_config//trace:trace?": [
-#             "//src:ansi_colors.h", "//src:trace_dev.h"
+#             "//lib:ansi_colors.h", "//lib:trace_dev.h"
 #         ],
-#         "//conditions:default": ["//src:trace_prod.h"]
+#         "//conditions:default": ["//lib:trace_prod.h"]
 #     }),
 # )
 

@@ -1,17 +1,12 @@
-load("@makeheaders//src:RULES.bzl", "makeheaders")
+load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
 
 load("//config/cc:CONFIG.bzl",
-     "BASE_DEPS",
      "BASE_COPTS",
-     "BASE_INCLUDE_PATHS",
-     DEFINES = "BASE_DEFINES")
+     "BASE_DEFINES")
 
-DEPS  = BASE_DEPS + ["@liblogc//src:logc", "@uthash//src:uthash"]
-COPTS = BASE_COPTS + BASE_INCLUDE_PATHS + [
-    "-I$(@liblogc)/src",
-    "-I$(@uthash)/src"
-]
-TOOLCHAINS = ["//:test_repo_paths"]
+DEPS  = ["@liblogc//lib:logc", "@uthash//lib:uthash"]
+COPTS = BASE_COPTS
+TOOLCHAINS = ["//:test_module_profiles"]
 
 ################################################################
 # test_suite(
@@ -25,12 +20,14 @@ cc_binary(
     name  = "parse_test",
     linkstatic = 1,
     srcs  = ["parse_test.c", ":mkhdrs"],
-    deps = DEPS + ["//src:findlibc"],
+    deps = DEPS + [
+        "//lib:findlibc",
+    ],
     copts = COPTS + [
-        "-I$(GENDIR)/$(@)/src",
+        "-I$(GENDIR)/$(@)/lib",
         "-I$(GENDIR)/$(@)/test",
     ],
-    local_defines = DEFINES,
+    local_defines = BASE_DEFINES,
     toolchains = TOOLCHAINS,
 )
 
@@ -42,25 +39,29 @@ cc_binary(
     name  = "lex_test",
     linkstatic = 1,
     srcs  = ["lex_test.c", ":mkhdrs"],
-    deps = DEPS + ["//src/lexer:meta_lexer"],
+    deps = DEPS + ["//lib/lexer:meta_lexer"],
     copts = COPTS + ["-I$(GENDIR)/$(@)/test"],
-    local_defines = DEFINES,
+    local_defines = BASE_DEFINES,
     toolchains = TOOLCHAINS,
 )
 
 ##########
-# cc_binary(
-#     name  = "crawl_test",
-#     linkstatic = 1,
-#     srcs  = ["crawler_test.c", ":mkhdrs"],
-#     deps = DEPS   + ["//src:findlibc"],
-#     copts = COPTS + [
-#         "-I$(GENDIR)/$(@)/src",
-#         "-I$(GENDIR)/$(@)/test",
-#     ],
-#     local_defines = DEFINES,
-#     toolchains = TOOLCHAINS,
-# )
+cc_binary(
+    name  = "crawl_test",
+    linkstatic = 1,
+    srcs  = ["crawler_test.c", ":mkhdrs"],
+    deps = DEPS   + [
+        "//lib:findlibc",
+        "@semverc//src:semverc",
+    ],
+    copts = COPTS + [
+        "-I$(GENDIR)/$(@)/lib",
+        "-I$(GENDIR)/$(@)/test",
+        "-I$(@semverc)/src",
+    ],
+    local_defines = BASE_DEFINES,
+    toolchains = TOOLCHAINS,
+)
 
 ################################################################
 # cc_binary(
@@ -69,7 +70,7 @@ cc_binary(
 #     srcs  = [
 #         "walk_test.c",
 #         "walk_test.h",
-#         # "//src:log.h"
+#         # "//lib:liblogc.h"
 #     ],
 #     copts = COPTS + [
 
@@ -92,8 +93,8 @@ cc_binary(
 #     ],
 #     defines = ["DEBUG", "TRACING"],
 #     deps = [
-#         "//src:treewalker",
-#         # "//src:opam_lexer"
+#         "//lib:treewalker",
+#         # "//lib:opam_lexer"
 #     ],
 # )
 
@@ -106,7 +107,15 @@ makeheaders(
         "parse_test.c",
     ],
     additional_srcs = [
-        "//src/lexer:meta_lexis.c",
-        "//src/parser:meta_syntaxis.c",
-    ],
+        "//lib/lexer:meta_lexis.c",
+        "//lib/parser:meta_syntaxis.c",
+    ] + select({
+        "@makeheaders//compilation_mode:fastbuild": [
+            "@makeheaders//logging:ansi_colors.h",
+            "@makeheaders//logging:macros_debug.h"
+        ],
+        "//conditions:default": [
+            "@makeheaders//logging:macros_ndebug.h"
+        ]
+    }),
 )

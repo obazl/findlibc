@@ -1,6 +1,6 @@
 #include <stdbool.h>
 
-#if defined(DEBUG_fastbuild)
+#if defined(PROFILE_fastbuild)
 int  findlibc_debug;
 bool findlibc_trace;
 #endif

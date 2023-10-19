@@ -1,18 +1,19 @@
-load("@cc_config//:MACROS.bzl", "repo_paths")
+load("@obazl_tools_cc//rules:module_profiles.bzl",
+     "module_profiles")
 
 PROD_REPOS = [
-    "@uthash//src:uthash",
     "@semverc//src:semverc",
-    "@liblogc//src:logc"
+    # "@liblogc//lib:logc",
+    # "@uthash//lib:uthash"
 ]
 
-repo_paths(
-    name = "repo_paths",
+module_profiles(
+    name = "module_profiles",
     repos = PROD_REPOS
 )
 
-repo_paths(
-    name = "test_repo_paths",
+module_profiles(
+    name = "test_module_profiles",
     repos = PROD_REPOS + [
         "@unity//src:unity"
     ]

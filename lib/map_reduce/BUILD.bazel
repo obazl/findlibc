@@ -1,15 +1,14 @@
 load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag")
-# load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
-load("@makeheaders//src:RULES.bzl", "makeheaders")
+load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
 
 load("//config/cc:CONFIG.bzl",
      COPTS = "BASE_COPTS",
-     DEFINES = "BASE_DEFINES",
+     "BASE_DEFINES",
      "BASE_DEPS")
 
-TOOLCHAINS = ["//:repo_paths"]
+TOOLCHAINS = ["//:module_profiles"]
 
 # for mkhdr findlib.h
 exports_files(["findlib_map_reduce.c"])
@@ -21,15 +20,13 @@ cc_library(
         ":mkhdrs"
     ],
     deps = BASE_DEPS + [
-        "@liblogc//src:logc",
-        "@uthash//src:uthash",
+        "@liblogc//lib:logc",
+        "@uthash//lib:uthash",
     ],
     copts = COPTS + [
-        "-I$(GENDIR)/$(@)/src/map_reduce",
-        "-I$(@liblogc)/src",
-        "-I$(@uthash)/src"
+        "-I$(GENDIR)/$(@)/lib/map_reduce",
     ],
-    local_defines = DEFINES,
+    defines = BASE_DEFINES,
     toolchains = TOOLCHAINS,
     visibility = ["//visibility:public"]
 )
@@ -38,16 +35,16 @@ makeheaders(
     name = "mkhdrs",
     hdrs_srcs = [
         "findlib_map_reduce.c",
-        # "//src:utils.c"
     ],
     additional_srcs = [
-        "//src:ansi_colors.h",
-        "//src:findlibc_debug.c"
+        "@makeheaders//logging:ansi_colors.h",
+        "//lib:findlibc_debug.c"
     ] + select({
-        "//config/compilation_mode:fastbuild?": [
-            "//src:macros_debug.h"
+        "@makeheaders//compilation_mode:fastbuild": [
+            "@makeheaders//logging:macros_debug.h"
         ],
-        "//conditions:default": ["//src:macros_ndebug.h"]
+        "//conditions:default": [
+            "@makeheaders//logging:macros_ndebug.h"
+        ]
     }),
-
 )

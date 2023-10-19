@@ -1,7 +1,7 @@
 load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag")
 
-load("@makeheaders//src:RULES.bzl", "makeheaders")
+load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
 load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//config/cc:CONFIG.bzl",
@@ -10,9 +10,8 @@ load("//config/cc:CONFIG.bzl",
      "BASE_DEPS")
 
 COPTS = BASE_COPTS
-DEFINES = BASE_DEFINES
 
-TOOLCHAINS = ["//:repo_paths"]
+TOOLCHAINS = ["//:module_profiles"]
 
 exports_files(glob(["meta_lexis.c"]))
 
@@ -25,23 +24,23 @@ cc_library(
         ":mkhdrs"
     ] + select({
         "@platforms//os:linux": [
-            # "//src/linux:strlcat.c",
-            # "//src/linux:strlcpy.c",
-            # "//src/linux:strnstr.c"
+            # "//lib/linux:strlcat.c",
+            # "//lib/linux:strlcpy.c",
+            # "//lib/linux:strnstr.c"
         ],
         "//conditions:default":   []
     }),
-    deps = BASE_DEPS + [
-        "@liblogc//src:logc",
-        "@uthash//src:uthash",
+    implementation_deps = BASE_DEPS + [
+        "@liblogc//lib:logc",
+        "@uthash//lib:uthash",
     ],
     copts = COPTS + [
-        "-I$(GENDIR)/$(@)/src/lexer",
+        "-I$(GENDIR)/$(@)/lib/lexer",
     ],
-    local_defines = DEFINES,
+    defines = BASE_DEFINES,
     toolchains = TOOLCHAINS,
     visibility = [
-        "//src:__subpackages__",
+        "//lib:__subpackages__",
         "//test:__pkg__"
     ]
 )
@@ -51,14 +50,15 @@ makeheaders(
     name = "mkhdrs",
     hdrs_srcs = ["meta_lexis.c"],
     additional_srcs = [
-        "//src/parser:meta_syntaxis.c"
+        "//lib/parser:meta_syntaxis.c"
     ] + select({
-        "//config/debug:debug?": [
-        # "//config/profile:dev?": [
-        # "@cc_config//profile:dev?": [
-            "//src:ansi_colors.h", "//src:macros_debug.h"
+        "@makeheaders//compilation_mode:fastbuild": [
+            "@makeheaders//logging:ansi_colors.h",
+            "@makeheaders//logging:macros_debug.h"
         ],
-        "//conditions:default": ["//src:macros_ndebug.h"]
+        "//conditions:default": [
+            "@makeheaders//logging:macros_ndebug.h"
+        ]
     }),
     visibility = ["//visibility:public"]
 )

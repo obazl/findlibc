@@ -3,7 +3,7 @@
 
 #include "utarray.h"
 #include "uthash.h"
-#include "log.h"
+#include "liblogc.h"
 
 #include "meta_properties.h"
 

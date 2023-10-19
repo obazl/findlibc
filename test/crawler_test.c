@@ -13,144 +13,115 @@
 
 #include <unistd.h>
 
-#include "log.h"
+#include "liblogc.h"
 
 #include "utarray.h"
 #include "utstring.h"
 #include "utstring.h"
 
 #include "findlibc.h"
-/* #include "unity.h" */
-
 #include "crawler_test.h"
 
-#include "log.h"
-
-bool debug;
 bool verbose;
 int  verbosity;
 
 UT_string *meta_path;
 
-/* void print_usage(char *test); */
-/* void set_options(char *test, struct option options[]); */
-/* void initialize(char *test, int argc, char **argv); */
-
-/* enum OPTS { */
-/*     FLAG_HELP, */
-/*     FLAG_DEBUG, */
-/*     FLAG_DEBUG_CONFIG, */
-/*     FLAG_DEBUG_SCM, */
-/*     FLAG_DEBUG_SCM_LOADS, */
-
-/*     FLAG_SHOW_CONFIG, */
-/*     FLAG_TRACE, */
-/*     FLAG_VERBOSE, */
-
-/*     LAST */
-/* }; */
-
-/* struct option options[] = { */
-/*     /\* 0 *\/ */
-/*     [FLAG_DEBUG] = {.long_name="debug",.short_name='d', */
-/*                     .flags=GOPT_ARGUMENT_FORBIDDEN | GOPT_REPEATABLE}, */
-/*     [FLAG_DEBUG_CONFIG] = {.long_name="debug-config", */
-/*                            .flags=GOPT_ARGUMENT_FORBIDDEN}, */
-/*     [FLAG_DEBUG_SCM] = {.long_name="debug-scm", .short_name = 'D', */
-/*                         .flags=GOPT_ARGUMENT_FORBIDDEN}, */
-/*     [FLAG_DEBUG_SCM_LOADS] = {.long_name="debug-scm-loads", */
-/*                               .flags=GOPT_ARGUMENT_FORBIDDEN}, */
-/*     [FLAG_SHOW_CONFIG] = {.long_name="show-config", */
-/*                           .flags=GOPT_ARGUMENT_FORBIDDEN}, */
-/*     [FLAG_TRACE] = {.long_name="trace",.short_name='t', */
-/*                     .flags=GOPT_ARGUMENT_FORBIDDEN}, */
-/*     [FLAG_VERBOSE] = {.long_name="verbose",.short_name='v', */
-/*                       .flags=GOPT_ARGUMENT_FORBIDDEN | GOPT_REPEATABLE}, */
-/*     [FLAG_HELP] = {.long_name="help",.short_name='h', */
-/*                    .flags=GOPT_ARGUMENT_FORBIDDEN}, */
-/*     [LAST] = {.flags = GOPT_LAST} */
-/* }; */
-
-/* **************** **************** */
-void pkg_handler(char *site_lib, char *pkg_dir, void *extra)
+void pkg_handler(char *switch_pfx,
+                 char *site_lib, /* switch_lib */
+                 char *pkg_dir,  /* subdir of site_lib */
+                 void *_paths) /* struct paths_s* */
 {
-    (void)extra;
-    if (verbose)
+    (void)_paths; /* not needed for testing */
+    /* bool empty_pkg = false; */
+    /* (void)empty_pkg; */
+    (void)switch_pfx;
+    /* UT_string *registry = (UT_string*)paths->registry; */
+    /* UT_string *coswitch_lib = (UT_string*)paths->coswitch_lib; */
+    /* struct obzl_meta_package *pkgs */
+    /*     = (struct obzl_meta_package*)paths->pkgs; */
+
+    if (verbosity > 1) {
         log_debug("pkg_handler: %s", pkg_dir);
-    /* log_debug("site-lib: %s", utstring_body(site_lib)); */
+        log_debug("site-lib: %s", site_lib);
+        /* log_debug("registry: %s", utstring_body(registry)); */
+        /* log_debug("coswitch: %s", utstring_body(coswitch_lib)); */
+        /* log_debug("pkgs ct: %d", HASH_COUNT(pkgs)); */
+    }
 
     utstring_renew(meta_path);
     utstring_printf(meta_path, "%s/%s/META",
                     site_lib,
                     pkg_dir);
                     /* utstring_body(opam_switch_lib), pkg_name); */
-    if (verbose)
-        log_info("\tmeta_path: %s", utstring_body(meta_path));
+    if (verbosity > 1)
+        log_info("meta_path: %s", utstring_body(meta_path));
 
     errno = 0;
-    if ( access(utstring_body(meta_path), F_OK) == 0 ) {
-        /* exists */
-        /* log_info("accessible: %s", utstring_body(meta_path)); */
+    if ( access(utstring_body(meta_path), F_OK) != 0 ) {
+        // no META happens for e.g. <switch>/lib/stublibs
+        /* log_warn("%s: %s", */
+        /*          strerror(errno), utstring_body(meta_path)); */
+        return;
+    /* } else { */
+    /*     /\* exists *\/ */
+    /*     log_info("accessible: %s", utstring_body(meta_path)); */
+    }
+    /* empty_pkg = false; */
+    errno = 0;
+    // pkg must be freed...
+    struct obzl_meta_package *pkg
+        = obzl_meta_parse_file(utstring_body(meta_path));
 
-        struct obzl_meta_package *pkg
-            = obzl_meta_parse_file(utstring_body(meta_path));
-        if (pkg == NULL) {
-            if (errno == -1) {
-#if defined(TRACING)
+    if (pkg == NULL) {
+        if ((errno == -1)
+            || (errno == -2)) {
+            /* empty_pkg = true; */
+            /* #if defined(TRACING) */
+            if (verbosity > 2)
                 log_warn("Empty META file: %s", utstring_body(meta_path));
-#endif
-                /* check dune-package for installed executables */
-                /* chdir(old_cwd); */
-                return;
-            } else
-                if (errno == -2)
-                    log_warn("META file contains only whitespace: %s", utstring_body(meta_path));
-                else
-                    log_error("Error parsing %s", utstring_body(meta_path));
+            return;
         } else {
-/* #if defined(DEVBUILD) */
-            if (verbose)
-                log_info("PARSED %s", utstring_body(meta_path));
-            /* if (mibl_debug_findlib) */
-                /* DUMP_PKG(0, pkg); */
-/* #endif */
+            log_error("Error parsing %s", utstring_body(meta_path));
+            return;
         }
     } else {
-        /* fail */
-        /* perror(utstring_body(meta_path)); */
-/* #if defined(TRACING) */
-        /* if (mibl_debug) */
-            log_warn("%s: %s", strerror(errno), utstring_body(meta_path));
-/* #endif */
-        /* chdir(old_cwd); */
-        /* return; */
-        /* exit(EXIT_FAILURE); */
+        /* #if defined(DEVBUILD) */
+        if (verbosity > 2) {
+            log_info("Parsed %d %s", verbosity, utstring_body(meta_path));
+        }
     }
+
+    char *pkg_name = strdup(pkg->name);
+    log_debug("pkg_name: %s", pkg_name);
 }
 
 int main(int argc, char *argv[])
 {
     int opt;
 
+    /* verbosity = 3; */
+
+    UT_string *switch_pfx;
+    utstring_new(switch_pfx);
+
     UT_string *findlib_site_lib;
     utstring_new(findlib_site_lib);
 
     utstring_new(meta_path);
-    char *opam_switch = NULL;
+    char *opam_switch;
 
     char *homedir = getenv("HOME");
 
-    while ((opt = getopt(argc, argv, "ds:hv")) != -1) {
+    while ((opt = getopt(argc, argv, "s:hv")) != -1) {
         switch (opt) {
-        case 'd':
-            debug = true;
-            break;
-        case 'v':
-            verbose = true;
-            break;
         case 's':
             /* BUILD.bazel or BUILD file */
             opam_switch = optarg;
+            utstring_printf(switch_pfx,
+                            "%s/.opam/%s",
+                            homedir,
+                            optarg);
             utstring_printf(findlib_site_lib,
                             "%s/.opam/%s/lib",
                             homedir,
@@ -184,12 +155,13 @@ int main(int argc, char *argv[])
     UT_array *opam_exclude_pkgs;
     utarray_new(opam_exclude_pkgs,&ut_str_icd);
 
-
     findlib_map(opam_include_pkgs,
                 opam_exclude_pkgs,
+                utstring_body(switch_pfx),
                 utstring_body(findlib_site_lib),
                 pkg_handler,
                 NULL);
+                /* pkg_handler); */
 
     utstring_free(findlib_site_lib);
     utstring_free(meta_path);

@@ -13,7 +13,7 @@
 
 #include <unistd.h>
 
-#include "log.h"
+#include "liblogc.h"
 
 #include "utarray.h"
 #include "utstring.h"

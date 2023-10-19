@@ -1,4 +1,4 @@
-#include "log.h"
+#include "liblogc.h"
 #include "utarray.h"
 
 #include "meta_debugging.h"

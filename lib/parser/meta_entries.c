@@ -6,13 +6,15 @@
 #include <stdio.h>
 #include "uthash.h"
 
-#include "log.h"
+#include "liblogc.h"
 
 #include "meta_entries.h"
 
-#if defined(DEBUG)
-extern int  findlibc_debug;
-extern bool findlibc_trace;
+#if defined(PROFILE_fastbuild)
+#define DEBUG_LEVEL findlibc_debug
+extern int  DEBUG_LEVEL;
+#define TRACE_FLAG findlibc_trace
+extern bool TRACE_FLAG;
 #endif
 
 /* **************************************************************** */

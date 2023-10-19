@@ -14,7 +14,7 @@
 #include<stdlib.h>
 #include <unistd.h>
 
-#include "log.h"
+#include "liblogc.h"
 #include "utarray.h"
 #include "utstring.h"
 
@@ -26,9 +26,11 @@ UT_string *build_file;
 
 UT_string *buffer;
 
-#if defined(DEBUG_fastbuild)
-extern int  findlibc_debug;
-extern bool findlibc_trace;
+#if defined(PROFILE_fastbuild)
+#define DEBUG_LEVEL findlibc_debug
+extern int  DEBUG_LEVEL;
+#define TRACE_FLAG findlibc_trace
+extern bool TRACE_FLAG;
 #endif
 
 bool _skip_pkg(char *pkg)
@@ -159,12 +161,14 @@ int main(int argc, char *argv[])
 
     while ((opt = getopt(argc, argv, "dtf:hv")) != -1) {
         switch (opt) {
+#if defined(PROFILE_fastbuild)
         case 'd':
             findlibc_debug++;
             break;
         case 't':
             findlibc_trace = true;
             break;
+#endif
         case 'f':
             /* BUILD.bazel or BUILD file */
             utstring_printf(meta_file, "%s", optarg);
@@ -178,7 +182,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    log_debug("DEBUG ct: %d", findlibc_debug);
+    LOG_DEBUG(0, "DEBUG ct: %d", findlibc_debug);
 
     if (utstring_len(meta_file) == 0) {
         log_error("-- -f /path/to/META.file must be provided.");

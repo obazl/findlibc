@@ -6,9 +6,9 @@
 #include "uthash.h"
 /* #endif */
 
-#include "log.h"
+#include "liblogc.h"
 
-/* #if defined(DEBUG_fastbuild) */
+/* #if defined(PROFILE_fastbuild) */
 extern int  findlibc_debug;
 extern bool findlibc_trace;
 /* #endif */

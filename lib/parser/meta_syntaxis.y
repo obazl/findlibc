@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "log.h"
+#include "liblogc.h"
 #include "utarray.h"
 
 #if defined(YYDEBUG)

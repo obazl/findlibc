@@ -8,7 +8,7 @@
 #include "utstrsort.h"
 #endif
 
-#include "log.h"
+#include "liblogc.h"
 
 #include "meta_flags.h"
 
