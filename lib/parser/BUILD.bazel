@@ -6,11 +6,14 @@ load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//config/cc:CONFIG.bzl",
      COPTS   = "BASE_COPTS",
-     DEPS    = "BASE_DEPS",
-     "BASE_DEFINES",
+     "PROFILE",
+     # DEPS    = "BASE_DEPS",
+     # "BASE_DEFINES",
      "define_module_version")
 
-TOOLCHAINS = ["//:module_profiles"]
+# TOOLCHAINS = ["//:module_profiles"]
+
+# PROFILE = ["PROFILE_$(COMPILATION_MODE)"]
 
 exports_files(
     glob(
@@ -34,17 +37,19 @@ cc_library(
         ":meta_syntaxis",
         ":mkhdrs",
     ],
-    implementation_deps = DEPS + [
+    implementation_deps = [ # DEPS + [
         "@liblogc//lib:logc",
-        "@semverc//src:semverc",
+        "@semverc//lib:semverc",
         "@uthash//lib:uthash",
         "//lib/lexer:meta_lexer",
     ],
+    includes = ["."],
     copts = COPTS + [
-        "-I$(@semverc)/src",
-        "-I$(GENDIR)/$(@)/lib/parser",
+        # "-I$(GENDIR)/lib/parser"
+        # "-I$(@semverc)/src",
+        # "-I$(GENDIR)/$(@)/lib/parser",
     ],
-    defines       = BASE_DEFINES,
+    defines       = PROFILE,
     local_defines = define_module_version() + select({
         ":yydebug?": ["YYDEBUG"], "//conditions:default":   []
     }) + select({
@@ -54,7 +59,7 @@ cc_library(
     # DEBUG_ENTRIES, DEBUG_FLAGS, DEBUG_PACKAGES
     # DEBUG_PROPERTIES, DEBUG_SETTINGS, DEBUG_VALUES
     # DEBUG_LEX
-    toolchains = TOOLCHAINS,
+    # toolchains = TOOLCHAINS,
     visibility = [
         "//lib:__pkg__",
         "//test:__subpackages__"
@@ -75,9 +80,9 @@ cc_library(
         ],
         "//conditions:default": []
     }),
-    deps = DEPS + [
+    deps = [ # DEPS + [
         "@liblogc//lib:logc",
-        "@semverc//src:semverc",
+        "@semverc//lib:semverc",
         "@uthash//lib:uthash",
     ],
     copts = COPTS + [
@@ -85,22 +90,22 @@ cc_library(
         "-Wno-unused-variable",
         "-Wno-visibility",
 
-        "-I.", # do not delete
-        "-I$(@semverc)/src",
-
         ## NOTE: generated meta_syntaxis.c includes header with
         ## full bazel path, e.g.
         ## #include "bazel-out/darwin_arm64-fastbuild/bin/<segs>/src/parser/meta_syntaxis.h"
         ## where <segs> will be null (if building w/in findlibc repo)
         ## or external/findlibc~<version> if building as an external repo
         ## so we always need this:
-        "-I.",
+        "-I.", # DO NOT DELETE
+
+        # "-I$(@semverc)/src",
+
 
         ## for mkhdrs output:
         # "-I$(GENDIR)/$(@)/lib/parser"
     ],
     includes = ["."],
-    defines = BASE_DEFINES,
+    defines = PROFILE,
     local_defines = select({
         ":yydebug?": ["YYDEBUG", "TRACING"],
         "//conditions:default":   []
@@ -108,7 +113,7 @@ cc_library(
         ":yytrace?": ["YYTRACE"],
         "//conditions:default":   []
     }),
-    toolchains = TOOLCHAINS,
+    # toolchains = TOOLCHAINS,
     visibility = ["//test:__subpackages__"]
 )
 

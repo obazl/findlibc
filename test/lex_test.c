@@ -23,11 +23,13 @@
 
 #include "liblogc.h"
 
+/* for testing we don't depend on libfindlibc so we
+   need to provide these: */
 #if defined(PROFILE_fastbuild)
 #define DEBUG_LEVEL findlibc_debug
-extern int  DEBUG_LEVEL;
+int  DEBUG_LEVEL;
 #define TRACE_FLAG findlibc_trace
-extern bool TRACE_FLAG;
+bool TRACE_FLAG;
 #endif
 
 LOCAL bool _is_empty(const char *s)

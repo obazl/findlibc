@@ -4,14 +4,13 @@ load("@bazel_skylib//rules:common_settings.bzl",
 load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
 load("@lemon//src:BUILD.bzl", "lemon")
 
-load("//config/cc:CONFIG.bzl",
-     "BASE_COPTS",
-     "BASE_DEFINES",
-     "BASE_DEPS")
+load("//config/cc:CONFIG.bzl", "BASE_COPTS", "PROFILE")
+     # "BASE_DEFINES")
+     # "BASE_DEPS")
 
 COPTS = BASE_COPTS
 
-TOOLCHAINS = ["//:module_profiles"]
+# TOOLCHAINS = ["//:module_profiles"]
 
 exports_files(glob(["meta_lexis.c"]))
 
@@ -22,23 +21,17 @@ cc_library(
     srcs = [
         "meta_lexis.c",
         ":mkhdrs"
-    ] + select({
-        "@platforms//os:linux": [
-            # "//lib/linux:strlcat.c",
-            # "//lib/linux:strlcpy.c",
-            # "//lib/linux:strnstr.c"
-        ],
-        "//conditions:default":   []
-    }),
-    implementation_deps = BASE_DEPS + [
+    ],
+    includes = ["."],
+    implementation_deps = [ # BASE_DEPS + [
         "@liblogc//lib:logc",
         "@uthash//lib:uthash",
     ],
     copts = COPTS + [
-        "-I$(GENDIR)/$(@)/lib/lexer",
+        # "-I$(GENDIR)/$(@)/lib/lexer",
     ],
-    defines = BASE_DEFINES,
-    toolchains = TOOLCHAINS,
+    defines = PROFILE,
+    # toolchains = TOOLCHAINS,
     visibility = [
         "//lib:__subpackages__",
         "//test:__pkg__"

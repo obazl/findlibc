@@ -86,7 +86,7 @@ void pkg_handler(char *switch_pfx,
             return;
         }
     } else {
-        /* #if defined(DEVBUILD) */
+        /* #if defined(PROFILE_fastbuild) */
         if (verbosity > 2) {
             log_info("Parsed %d %s", verbosity, utstring_body(meta_path));
         }

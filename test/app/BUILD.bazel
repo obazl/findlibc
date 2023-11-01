@@ -1,11 +1,6 @@
 load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
 
-load("//config/cc:CONFIG.bzl",
-     "BASE_COPTS",
-     "BASE_DEFINES")
-
-COPTS = BASE_COPTS
-TOOLCHAINS = ["//:test_module_profiles"]
+load("//config/cc:CONFIG.bzl", "BASE_COPTS", "PROFILE")
 
 ##########
 cc_binary(
@@ -20,24 +15,12 @@ cc_binary(
         "@uthash//lib:uthash",
         "//lib:findlibc"
     ],
-    copts = COPTS + [
-        "-I$(GENDIR)/$(@)/src",
-        "-I$(GENDIR)/$(@)/test/app",
-        # "-I$(@liblogc)/lib",
-        # "-I$(@uthash)/lib"
-    ],
-    local_defines = BASE_DEFINES,
-    toolchains = TOOLCHAINS,
+    copts = BASE_COPTS + ["-I$(GENDIR)/test/app"],
+    defines = PROFILE,
 )
 
 ############
 makeheaders(
     name = "mkhdrs",
-    hdrs_srcs = [
-        "meta_parse.c",
-    ],
-    # additional_srcs = [
-    #     "//lib/lexer:meta_lexis.c",
-    #     "//lib/parser:meta_syntaxis.c",
-    # ],
+    hdrs_srcs = ["meta_parse.c"],
 )

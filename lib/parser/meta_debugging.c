@@ -10,7 +10,7 @@ char *fl_sp = " ";
 bool debug_meta;
 
 #if EXPORT_INTERFACE
-#if defined(DEVBUILD)
+#if defined(PROFILE_fastbuild)
 #define DUMP_PKG(fl_indent, pkg) \
     log_debug("FINDLIB PKG: %s", pkg->name); \
     dump_package(fl_indent, pkg)

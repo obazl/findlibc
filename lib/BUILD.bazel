@@ -1,63 +1,39 @@
 load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag")
-# load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
 load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
 load("@lemon//src:BUILD.bzl", "lemon")
 
-load("//config/cc:CONFIG.bzl",
-     "BASE_COPTS",
-     "BASE_DEFINES",
-     "BASE_DEPS")
+load("//config/cc:CONFIG.bzl", "BASE_COPTS", "PROFILE")
 
-COPTS = BASE_COPTS
+# TOOLCHAINS = ["//:module_profiles"]
 
-TOOLCHAINS = ["//:module_profiles"]
-
-exports_files(glob([
-    # "ansi_colors.h",
-    "findlibc_debug.c",
-    # "macros_debug.h", "macros_ndebug.h",
-]))
+# exports_files(glob([
+#     # "ansi_colors.h",
+#     "findlibc_debug.c",
+#     # "macros_debug.h", "macros_ndebug.h",
+# ]))
 
 ################################################################
 cc_library(
     name = "findlibc",
     # alwayslink = True,
+    srcs = ["findlibc.c"],
     hdrs = ["findlibc.h"],
     includes = ["."],
-    implementation_deps = BASE_DEPS + [
-        # "//lib/lexer:meta_lexer",
+    implementation_deps = [
         "//lib/parser:meta_parser",
         "//lib/map_reduce:findlib_map_reduce",
         "@liblogc//lib:logc",
-        "@semverc//src:semverc",
+        "@semverc//lib:semverc",
         "@uthash//lib:uthash",
-        # "//lib/lexer:meta_lexer",
-        # "//lib/parser:meta_parser",
     ],
-    copts = [
-        "-I$(@semverc)/src"
-    ],
-    defines    = BASE_DEFINES,
-    toolchains = TOOLCHAINS,
-    visibility = ["//visibility:public"]
-)
-
-cc_library(
-    name = "findlibc_debug",
-    alwayslink = True,
-    srcs = ["findlibc_debug.c"],
-    # deps = [
-    #     # "//lib/lexer:meta_lexer",
-    #     "//lib/parser:meta_parser",
-    #     "//lib/map_reduce:findlib_map_reduce",
-    #     "@liblogc//lib:logc",
-    #     "@uthash//lib:uthash",
-    #     # "//lib/lexer:meta_lexer",
-    #     # "//lib/parser:meta_parser",
-    # ],
-    defines    = BASE_DEFINES,
+    copts = BASE_COPTS + select({
+        "@makeheaders//compilation_mode:fastbuild": [],
+        # else findlib.c will be empty, so:
+        "//conditions:default": ["-Wno-empty-translation-unit"]
+    }),
+    defines    = PROFILE,
     visibility = ["//visibility:public"]
 )
 
@@ -78,7 +54,6 @@ makeheaders(
         "//lib/map_reduce:findlib_map_reduce.c",
     ] + select({
         "@makeheaders//compilation_mode:fastbuild": [
-            ":findlibc_debug.c",
             "//lib/parser:meta_debugging.c",
         ],
         "//conditions:default": []

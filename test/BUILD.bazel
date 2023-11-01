@@ -1,34 +1,17 @@
 load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
 
-load("//config/cc:CONFIG.bzl",
-     "BASE_COPTS",
-     "BASE_DEFINES")
+load("//config/cc:CONFIG.bzl", "BASE_COPTS", "PROFILE")
 
 DEPS  = ["@liblogc//lib:logc", "@uthash//lib:uthash"]
-COPTS = BASE_COPTS
-TOOLCHAINS = ["//:test_module_profiles"]
-
-################################################################
-# test_suite(
-#     name  = "test",
-#     tests = [
-#     ]
-# )
 
 ################################################################
 cc_binary(
     name  = "parse_test",
     linkstatic = 1,
     srcs  = ["parse_test.c", ":mkhdrs"],
-    deps = DEPS + [
-        "//lib:findlibc",
-    ],
-    copts = COPTS + [
-        "-I$(GENDIR)/$(@)/lib",
-        "-I$(GENDIR)/$(@)/test",
-    ],
-    local_defines = BASE_DEFINES,
-    toolchains = TOOLCHAINS,
+    deps = DEPS + ["//lib:findlibc"],
+    copts = BASE_COPTS + ["-I$(GENDIR)/test"],
+    defines = PROFILE
 )
 
 ##########
@@ -40,9 +23,8 @@ cc_binary(
     linkstatic = 1,
     srcs  = ["lex_test.c", ":mkhdrs"],
     deps = DEPS + ["//lib/lexer:meta_lexer"],
-    copts = COPTS + ["-I$(GENDIR)/$(@)/test"],
-    local_defines = BASE_DEFINES,
-    toolchains = TOOLCHAINS,
+    copts = BASE_COPTS + ["-I$(GENDIR)/test"],
+    defines = PROFILE,
 )
 
 ##########
@@ -52,15 +34,10 @@ cc_binary(
     srcs  = ["crawler_test.c", ":mkhdrs"],
     deps = DEPS   + [
         "//lib:findlibc",
-        "@semverc//src:semverc",
+        "@semverc//lib:semverc",
     ],
-    copts = COPTS + [
-        "-I$(GENDIR)/$(@)/lib",
-        "-I$(GENDIR)/$(@)/test",
-        "-I$(@semverc)/src",
-    ],
-    local_defines = BASE_DEFINES,
-    toolchains = TOOLCHAINS,
+    copts = BASE_COPTS + ["-I$(GENDIR)/test"],
+    defines = PROFILE,
 )
 
 ################################################################
@@ -72,7 +49,7 @@ cc_binary(
 #         "walk_test.h",
 #         # "//lib:liblogc.h"
 #     ],
-#     copts = COPTS + [
+#     copts = BASE_COPTS + [
 
 #         "-Isrc",
 #         "-Itest",

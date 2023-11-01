@@ -3,12 +3,13 @@ load("@bazel_skylib//rules:common_settings.bzl",
 
 load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
 
-load("//config/cc:CONFIG.bzl",
-     COPTS = "BASE_COPTS",
-     "BASE_DEFINES",
-     "BASE_DEPS")
+load("//config/cc:CONFIG.bzl", COPTS = "BASE_COPTS", "PROFILE")
+     # "BASE_DEFINES")
+     # "BASE_DEPS")
 
-TOOLCHAINS = ["//:module_profiles"]
+# PROFILE = ["PROFILE_$(COMPILATION_MODE)"]
+
+# TOOLCHAINS = ["//:module_profiles"]
 
 # for mkhdr findlib.h
 exports_files(["findlib_map_reduce.c"])
@@ -19,15 +20,16 @@ cc_library(
         "findlib_map_reduce.c",
         ":mkhdrs"
     ],
-    deps = BASE_DEPS + [
+    includes = ["."],
+    deps = [ # BASE_DEPS + [
         "@liblogc//lib:logc",
         "@uthash//lib:uthash",
     ],
-    copts = COPTS + [
-        "-I$(GENDIR)/$(@)/lib/map_reduce",
-    ],
-    defines = BASE_DEFINES,
-    toolchains = TOOLCHAINS,
+    copts = COPTS + ["-I$(GENDIR)"],
+        # "-I$(GENDIR)/$(@)/lib/map_reduce",
+    # ],
+    defines = PROFILE,
+    # toolchains = TOOLCHAINS,
     visibility = ["//visibility:public"]
 )
 
@@ -38,7 +40,7 @@ makeheaders(
     ],
     additional_srcs = [
         "@makeheaders//logging:ansi_colors.h",
-        "//lib:findlibc_debug.c"
+        # "//lib:findlibc_debug.c"
     ] + select({
         "@makeheaders//compilation_mode:fastbuild": [
             "@makeheaders//logging:macros_debug.h"

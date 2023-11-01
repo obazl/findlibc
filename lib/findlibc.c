@@ -4,4 +4,3 @@
 int  findlibc_debug;
 bool findlibc_trace;
 #endif
-
