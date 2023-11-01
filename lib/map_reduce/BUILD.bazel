@@ -28,7 +28,11 @@ cc_library(
     copts = COPTS + ["-I$(GENDIR)"],
         # "-I$(GENDIR)/$(@)/lib/map_reduce",
     # ],
-    defines = PROFILE,
+    defines = PROFILE + select({
+        ## for dirent->d_type macros:
+        "@platforms//os:linux": ["_DEFAULT_SOURCE"],
+        "//conditions:default": []
+    }),
     # toolchains = TOOLCHAINS,
     visibility = ["//visibility:public"]
 )

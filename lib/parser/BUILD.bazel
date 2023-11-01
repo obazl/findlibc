@@ -105,7 +105,11 @@ cc_library(
         # "-I$(GENDIR)/$(@)/lib/parser"
     ],
     includes = ["."],
-    defines = PROFILE,
+    defines = PROFILE + select({
+        ## for strdup, strndup:
+        "@platforms//os:linux": ["_POSIX_C_SOURCE=200809L"],
+        "//conditions:default": []
+    }),
     local_defines = select({
         ":yydebug?": ["YYDEBUG", "TRACING"],
         "//conditions:default":   []

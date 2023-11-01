@@ -30,7 +30,11 @@ cc_library(
     copts = COPTS + [
         # "-I$(GENDIR)/$(@)/lib/lexer",
     ],
-    defines = PROFILE,
+    defines = PROFILE + select({
+        ## for strdup, strndup:
+        "@platforms//os:linux": ["_POSIX_C_SOURCE=200809L"],
+        "//conditions:default": []
+    }),
     # toolchains = TOOLCHAINS,
     visibility = [
         "//lib:__subpackages__",
