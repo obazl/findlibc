@@ -9,6 +9,9 @@ char *fl_sp = " ";
 
 bool debug_meta;
 
+int  findlibc_debug;
+bool findlibc_trace;
+
 #if EXPORT_INTERFACE
 #if defined(PROFILE_fastbuild)
 #define DUMP_PKG(fl_indent, pkg) \

@@ -8,10 +8,10 @@
 
 #include "liblogc.h"
 
-/* #if defined(PROFILE_fastbuild) */
+#if defined(PROFILE_fastbuild)
 extern int  findlibc_debug;
 extern bool findlibc_trace;
-/* #endif */
+#endif
 
 #include "meta_settings.h"
 

@@ -18,7 +18,7 @@ load("//config/cc:CONFIG.bzl", "BASE_COPTS", "PROFILE")
 cc_library(
     name = "findlibc",
     # alwayslink = True,
-    srcs = ["findlibc.c"],
+    # srcs = ["findlibc.c"],
     hdrs = ["findlibc.h"],
     includes = ["."],
     implementation_deps = [
@@ -33,6 +33,7 @@ cc_library(
         # else findlib.c will be empty, so:
         "//conditions:default": ["-Wno-empty-translation-unit"]
     }),
+    linkopts = ["-Wl,-export_dynamic"],
     defines    = PROFILE,
     visibility = ["//visibility:public"]
 )
@@ -42,6 +43,7 @@ makeheaders(
     out ="findlibc.h",
     export_interface = True,
     hdrs_srcs = [
+        ":findlibc.c",
         "//lib/lexer:meta_lexis.c",
         "//lib/parser:meta_syntaxis.c",
         "//lib/parser:meta_parser.c",
