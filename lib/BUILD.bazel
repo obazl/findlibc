@@ -33,7 +33,11 @@ cc_library(
         # else findlib.c will be empty, so:
         "//conditions:default": ["-Wno-empty-translation-unit"]
     }),
-    linkopts = ["-Wl,-export_dynamic"],
+    linkopts = select({
+        "@platforms//os:linux": ["-Wl,-export-dynamic"],
+        "@platforms//os:macos": ["-Wl,-export_dynamic"],
+        "//conditions:default": [] #FIXME
+    }),
     defines    = PROFILE,
     visibility = ["//visibility:public"]
 )
