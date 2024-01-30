@@ -34,7 +34,10 @@ cc_library(
         "//conditions:default": ["-Wno-empty-translation-unit"]
     }),
     linkopts = select({
-        "@platforms//os:linux": ["-Wl,-export-dynamic"],
+        "@platforms//os:linux": [
+            "-Wl,--fatal-warnings",
+            "-Wl,-export-dynamic"
+        ],
         "@platforms//os:macos": ["-Wl,-export_dynamic"],
         "//conditions:default": [] #FIXME
     }),
