@@ -24,7 +24,7 @@ extern bool findlibc_trace;
 /*
   findlib META variable assignment
   same var can be LHS of multiple assign stmts, distinguished by "predicates"
-  e.g. ctypes:
+  e.g. for ctypes:
 
   archive(byte) = "ctypes.cma"
   archive(byte, plugin) = "ctypes.cma"

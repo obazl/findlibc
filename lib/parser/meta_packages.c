@@ -1112,3 +1112,103 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
     }
     return pkg_deps;
 }
+
+/* search pkg for archive(native) matching cmxa */
+EXPORT char *_pkg_for_cmxa(struct obzl_meta_package *_pkg,
+                           char *cmxa)
+{
+    TRACE_ENTRY;
+    struct obzl_meta_property *deps_prop = obzl_meta_entries_property(_pkg->entries, "archive");
+    if ( deps_prop == NULL ) {
+        LOG_DEBUG(0, "Prop 'archive' not found", "");
+        // may happen, e.g. lib/ocaml/compiler-libs/META has only subpkgs
+        return NULL;
+    }
+    obzl_meta_settings *settings = obzl_meta_property_settings(deps_prop);
+    /* each setting has flags, opcode, values */
+
+    int settings_ct = obzl_meta_settings_count(settings);
+    LOG_DEBUG(0, "settings count for 'archive' prop: %d", settings_ct);
+    obzl_meta_setting *setting = NULL;
+    obzl_meta_values *vals;
+    obzl_meta_value *archive_name = NULL;
+    obzl_meta_flags *flags;
+    for (int j = 0; j < settings_ct; j++) {
+        setting = obzl_meta_settings_nth(settings, j);
+        flags = obzl_meta_setting_flags(setting);
+        bool x = obzl_meta_flags_has_flag(flags, "native", 1);
+        if (x) {
+            LOG_DEBUG(0, "setting %d has native flag? %d", j, x);
+            vals = obzl_meta_setting_values(setting);
+            LOG_DEBUG(0, "vals ct: %d", obzl_meta_values_count(vals));
+            for (int k = 0; k < obzl_meta_values_count(vals); k++) {
+                archive_name = obzl_meta_values_nth(vals, k);
+                LOG_DEBUG(0, "archive(native)' == '%s' (len: %d)",
+                          (char*)*archive_name, strlen((char*)*archive_name));
+                LOG_DEBUG(0, "cmxa: '%s' (len: %d)", cmxa, strlen(cmxa));
+                LOG_DEBUG(0, "pkg name: '%s'", _pkg->name);
+                if (strncmp((char*)*archive_name,
+                            cmxa,
+                            strlen(cmxa)) == 0) {
+                    LOG_DEBUG(0, "Matched for pkg: %s", _pkg->name);
+                    /* FIXME: construct dotted pkg name, e.g. fmt.tty */
+                    return strdup(_pkg->name);
+                }
+            }
+        }
+    }
+    return NULL;
+}
+
+/* find the pkg name associated with cmxa file */
+/* returned string must be freed */
+EXPORT char *findlib_pkg_for_cmxa(struct obzl_meta_package *_pkg,
+                                  char *_prefix,
+                                  char *cmxa)
+{
+    TRACE_ENTRY;
+    (void)_pkg;
+    LOG_DEBUG(0, "finding pkg for cmxa: %s", cmxa);
+
+    UT_string *prefix;
+    utstring_new(prefix);
+
+    char *opam_pkg_name = _pkg_for_cmxa(_pkg, cmxa);
+    if (opam_pkg_name != NULL) {
+        if (_prefix == NULL) {
+            utstring_free(prefix);
+            return opam_pkg_name;
+        } else {
+            utstring_printf(prefix, "%s.%s", _prefix, opam_pkg_name);
+            free(opam_pkg_name);
+            opam_pkg_name = strdup(utstring_body(prefix));
+            utstring_free(prefix);
+            LOG_DEBUG(0, "Returning: %s", opam_pkg_name);
+            return(opam_pkg_name);
+        }
+    }
+
+    if (_prefix == NULL) {
+        utstring_printf(prefix, "%s", _pkg->name);
+    } else {
+        utstring_printf(prefix, "%s.%s", _prefix, _pkg->name);
+    }
+    LOG_DEBUG(0, "new prefix: %s", utstring_body(prefix));
+    obzl_meta_entry *e = NULL;
+    for (int i = 0; i < obzl_meta_entries_count(_pkg->entries); i++) {
+        e = obzl_meta_entries_nth(_pkg->entries, i);
+        if (e->type == OMP_PACKAGE) {
+            obzl_meta_package *subpkg = e->package;
+            LOG_DEBUG(0, "SUBPKG: %s", subpkg->name);
+            // RECUR
+            opam_pkg_name = findlib_pkg_for_cmxa(subpkg, utstring_body(prefix), cmxa);
+            LOG_DEBUG(0, "opam_pkg_name: %s", opam_pkg_name);
+            if (opam_pkg_name != NULL) {
+                utstring_free(prefix);
+                return opam_pkg_name;
+            }
+        }
+    }
+    utstring_free(prefix);
+    return NULL;
+}
