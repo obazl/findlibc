@@ -9,11 +9,13 @@ char *fl_sp = " ";
 
 bool debug_meta;
 
-int  findlibc_debug;
-bool findlibc_trace;
+#define DEBUG_LEVEL debug_findlibc
+extern int  DEBUG_LEVEL;
+#define TRACE_FLAG trace_findlibc
+extern bool TRACE_FLAG;
 
 #if EXPORT_INTERFACE
-#if defined(PROFILE_fastbuild)
+#if defined(PROFILE_dev)
 #define DUMP_PKG(fl_indent, pkg) \
     log_debug("FINDLIB PKG: %s", pkg->name); \
     dump_package(fl_indent, pkg)

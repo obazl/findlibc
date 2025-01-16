@@ -25,7 +25,7 @@
 bool verbose;
 int  verbosity;
 
-UT_string *meta_path;
+extern UT_string *meta_path;
 
 void pkg_handler(char *switch_pfx,
                  char *site_lib, /* switch_lib */

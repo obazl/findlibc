@@ -1,15 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag")
 
 load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
 
 load("//config/cc:CONFIG.bzl", COPTS = "BASE_COPTS", "PROFILE")
-     # "BASE_DEFINES")
-     # "BASE_DEPS")
-
-# PROFILE = ["PROFILE_$(COMPILATION_MODE)"]
-
-# TOOLCHAINS = ["//:module_profiles"]
 
 # for mkhdr findlib.h
 exports_files(["findlib_map_reduce.c"])
@@ -26,14 +22,11 @@ cc_library(
         "@uthash//lib:uthash",
     ],
     copts = COPTS + ["-I$(GENDIR)"],
-        # "-I$(GENDIR)/$(@)/lib/map_reduce",
-    # ],
     defines = PROFILE + select({
         ## for dirent->d_type macros:
         "@platforms//os:linux": ["_DEFAULT_SOURCE"],
         "//conditions:default": []
     }),
-    # toolchains = TOOLCHAINS,
     visibility = ["//visibility:public"]
 )
 
@@ -43,14 +36,13 @@ makeheaders(
         "findlib_map_reduce.c",
     ],
     additional_srcs = [
-        "@makeheaders//logging:ansi_colors.h",
-        # "//lib:findlibc_debug.c"
+        "@liblogc//macros:ansi_colors.h",
     ] + select({
-        "@makeheaders//compilation_mode:fastbuild": [
-            "@makeheaders//logging:macros_debug.h"
+        "@obazl_config_cc//profile:dev?": [
+            "@liblogc//macros:logging_debug.h"
         ],
         "//conditions:default": [
-            "@makeheaders//logging:macros_ndebug.h"
+            "@liblogc//macros:logging_ndebug.h"
         ]
     }),
 )

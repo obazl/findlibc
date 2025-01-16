@@ -1,27 +1,34 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag")
 
 load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
-load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//config/cc:CONFIG.bzl", "BASE_COPTS", "PROFILE")
-     # "BASE_DEFINES")
-     # "BASE_DEPS")
 
 COPTS = BASE_COPTS
 
-# TOOLCHAINS = ["//:module_profiles"]
-
 exports_files(glob(["meta_lexis.c"]))
+
+######################################################
+## dev flag tells Bazel to regenerate the lexer
+bool_flag(name = "dev", build_setting_default = False)
+config_setting(name = "dev?", flag_values = {":dev": "True"})
+
+## enable debug logging
+bool_flag(name = "debug-lexer", build_setting_default = False)
+config_setting(name = "debug-lexer?",
+               flag_values = {":debug-lexer": "True"})
 
 ################################################################
 cc_library(
     name = "meta_lexer",
     linkstatic = True,
-    srcs = [
-        "meta_lexis.c",
-        ":mkhdrs"
-    ],
+    srcs = [":mkhdrs"] + select({
+        "//lib/lexer:dev?": ["//lib/lexer/lexis:meta_lexis.c"],
+        "//conditions:default": ["meta_lexis.c"],
+    }),
     includes = ["."],
     implementation_deps = [ # BASE_DEPS + [
         "@liblogc//lib:logc",
@@ -45,16 +52,24 @@ cc_library(
 ########
 makeheaders(
     name = "mkhdrs",
-    hdrs_srcs = ["meta_lexis.c"],
-    additional_srcs = [
-        "//lib/parser:meta_syntaxis.c"
-    ] + select({
-        "@makeheaders//compilation_mode:fastbuild": [
-            "@makeheaders//logging:ansi_colors.h",
-            "@makeheaders//logging:macros_debug.h"
+    hdrs_srcs = select({
+        "//lib/lexer:dev?": ["//lib/lexer/lexis:meta_lexis.c"],
+        "//conditions:default": ["meta_lexis.c"],
+    }),
+    additional_srcs = select({
+        "//lib/parser:dev?": [
+            "//lib/parser/syntaxis:meta_syntaxis.c"
         ],
         "//conditions:default": [
-            "@makeheaders//logging:macros_ndebug.h"
+            "//lib/parser:meta_syntaxis.c"
+        ],
+    }) + select({
+        "@obazl_config_cc//profile:dev?": [
+            "@liblogc//macros:ansi_colors.h",
+            "@liblogc//macros:logging_debug.h"
+        ],
+        "//conditions:default": [
+            "@liblogc//macros:logging_ndebug.h"
         ]
     }),
     visibility = ["//visibility:public"]

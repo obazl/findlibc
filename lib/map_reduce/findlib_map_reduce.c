@@ -23,12 +23,10 @@
 
 #include "findlib_map_reduce.h"
 
-#if defined(PROFILE_fastbuild)
-#define TRACE_FLAG findlibc_trace
+#define TRACE_FLAG trace_findlibc
 extern bool TRACE_FLAG;
-#define DEBUG_LEVEL findlibc_debug
+#define DEBUG_LEVEL debug_findlibc
 extern int  DEBUG_LEVEL;
-#endif
 
 extern bool verbose;
 extern int  verbosity;
@@ -99,20 +97,20 @@ typedef void (*findlib_handler) (char *switch_pfx, char *site_lib, char *pkg_dir
 EXPORT void findlib_map(UT_array *opam_pending_deps,
                         UT_array *opam_exclude_pkgs,
                         char *switch_pfx,
-                        char *findlib_site_lib,
+                        char *switch_lib,
                         findlib_handler _handler,
                         void *extra)
 {
     TRACE_ENTRY;
     (void)opam_exclude_pkgs;
-    LOG_DEBUG(0, "%s %s", "findlib site-lib:", findlib_site_lib);
+    LOG_DEBUG(0, "%s %s", "findlib site-lib:", switch_lib);
         /* log_debug("%-16s%s", "launch_dir:", launch_dir); */
         /* log_debug("%-16s%s", "base ws:", rootws); */
         /* log_debug("%-16s%s", "effective ws:", ews_root); */
     LOG_DEBUG(0, "pendings ct: %d", utarray_len(opam_pending_deps));
 
     if (verbosity > 1) {
-        log_info("current dir: %s", getcwd(NULL, 0));
+        LOG_INFO(0, "current dir: %s", getcwd(NULL, 0));
         /* printf(YEL "%-16s%s\n" CRESET, "pkg_name:", pkg_name); */
     }
 
@@ -127,13 +125,13 @@ EXPORT void findlib_map(UT_array *opam_pending_deps,
     if (utarray_len(opam_pending_deps) < 1) {
         /* default: all pkgs in switch */
         if (verbosity > 1) {
-            log_info("reading opam pkgs in %s", findlib_site_lib);
+            LOG_INFO(0, "reading opam pkgs in %s", switch_lib);
         }
         errno = 0;
-        DIR *switch_dir = opendir(findlib_site_lib);
+        DIR *switch_dir = opendir(switch_lib);
         if (switch_dir == NULL) {
             log_error("ERROR: opendir '%s': %s\n",
-                      findlib_site_lib,
+                      switch_lib,
                       strerror(errno));
             fprintf(stderr, "ERROR: bad opendir: %s\n", strerror(errno));
             return;
@@ -152,10 +150,10 @@ EXPORT void findlib_map(UT_array *opam_pending_deps,
         closedir(switch_dir);
 
         if (verbosity > 1) {
-            log_info("pendings ct: %d", utarray_len(opam_pending_deps));
+            LOG_INFO(0, "pendings ct: %d", utarray_len(opam_pending_deps));
             p = NULL;
             while ( (p=(const char**)utarray_next(opam_pending_deps, p))) {
-                log_info("pending:  %s", *p);
+                LOG_INFO(0, "pending:  %s", *p);
             }
         }
 
@@ -180,9 +178,7 @@ EXPORT void findlib_map(UT_array *opam_pending_deps,
     while ( utarray_len(opam_pending_deps) > 0 ) {
         this = utarray_eltptr(opam_pending_deps, 0);
         next = strdup(*this);
-/* #if defined(PROFILE_fastbuild) */
-/*         log_info("next pkg: %s", next); */
-/* #endif */
+/*         LOG_INFO(0, "next pkg: %s", next); */
         utarray_erase(opam_pending_deps, 0, 1);
         /* handle_findlib_pkg will check completed_deps before adding
            new pkg to pending_deps */
@@ -192,7 +188,7 @@ EXPORT void findlib_map(UT_array *opam_pending_deps,
         if (p == NULL)
             utarray_push_back(opam_completed_deps, &next);
 
-        _handler(switch_pfx, findlib_site_lib, next, extra);
+        _handler(switch_pfx, switch_lib, next, extra);
 
         free(next);
     }

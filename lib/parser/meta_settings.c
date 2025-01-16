@@ -8,10 +8,10 @@
 
 #include "liblogc.h"
 
-#if defined(PROFILE_fastbuild)
-extern int  findlibc_debug;
-extern bool findlibc_trace;
-#endif
+#define DEBUG_LEVEL debug_findlibc
+extern int  DEBUG_LEVEL;
+#define TRACE_FLAG trace_findlibc
+extern bool TRACE_FLAG;
 
 #include "meta_settings.h"
 

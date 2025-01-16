@@ -45,19 +45,7 @@ struct meta_lexer_s
 /* static void mtag(const char *t) */
 static void mtag(int t)
 {
-    (void)t;
-    /* fprintf(stderr, "mtag ctor idx: %d, s: %.22s\n", curr_tag, t); */
-    /* deps[curr_tag++] = t; */
 }
-
-
-/* static void print_tags() { */
-/*     /\* fprintf(stderr, "printing %d tags:\n", curr_tag/2); *\/ */
-/*     for (int i=0; i < curr_tag/2 ; i++) { */
-/*         fprintf(stderr, "\tVALTOK: '%*s'\n", (int)(deps[i*2+1] - deps[i*2]), deps[i*2]); */
-/*     } */
-/*     /\* fprintf(stderr, "done\n"); *\/ */
-/* } */
 
 #define YYMTAGP(t) mtag(YYCURSOR)
 #define YYMTAGN(t) mtag(NULL)

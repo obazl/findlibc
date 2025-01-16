@@ -1,3 +1,5 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
 load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
 
 load("//config/cc:CONFIG.bzl", "BASE_COPTS", "PROFILE")

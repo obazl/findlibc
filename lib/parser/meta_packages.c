@@ -10,12 +10,10 @@
 #if EXPORT_INTERFACE
 #include "uthash.h"
 
-#if defined(PROFILE_fastbuild)
-#define DEBUG_LEVEL findlibc_debug
+#define DEBUG_LEVEL debug_findlibc
 extern int  DEBUG_LEVEL;
-#define TRACE_FLAG findlibc_trace
+#define TRACE_FLAG trace_findlibc
 extern bool TRACE_FLAG;
-#endif
 
 /* findlib_version_t must match semver_t */
 typedef struct findlib_version_s {
@@ -233,6 +231,7 @@ EXPORT obzl_meta_values *resolve_setting_values(obzl_meta_setting *_setting,
 }
 
 /* **************** */
+/* FIXME: obsoleted by findlib_pkg_deps below? */
 EXPORT int pkg_deps(struct obzl_meta_package *_pkg,
                     UT_array *pending_deps,
                     UT_array *completed_deps)
@@ -481,8 +480,8 @@ EXPORT UT_array *findlib_pkg_codeps(struct obzl_meta_package *_pkg,
     for (int i = 0; i < settings_ct; i++) {
         setting = obzl_meta_settings_nth(settings, i);
         LOG_DEBUG(3, "setting %d", i+1);
-#if defined(PROFILE_fastbuild)
-        if (findlibc_debug > 3) dump_setting(0, setting);
+#if defined(PROFILE_dev)
+        if (debug_findlibc > 3) dump_setting(0, setting);
 #endif
         obzl_meta_flags *flags = obzl_meta_setting_flags(setting);
         /* int flags_ct = 0; */
@@ -532,8 +531,8 @@ EXPORT UT_array *findlib_pkg_codeps(struct obzl_meta_package *_pkg,
         /* vals = resolve_setting_values(setting, flags, settings); */
         /* vals = obzl_meta_setting_values(setting); */
         LOG_DEBUG(3, "vals ct: %d", obzl_meta_values_count(vals));
-#if defined(PROFILE_fastbuild)
-        if (findlibc_debug > 3) dump_values(0, vals);
+#if defined(PROFILE_dev)
+        if (debug_findlibc > 3) dump_values(0, vals);
 #endif
         /* now we handle UPDATE settings */
 
@@ -655,9 +654,9 @@ EXPORT UT_array *findlib_subpkg_codeps(struct obzl_meta_package *_pkg,
     LOG_DEBUG(3, "iterating settings", "");
     for (int i = 0; i < settings_ct; i++) {
         setting = obzl_meta_settings_nth(settings, i);
-#if defined(PROFILE_fastbuild)
+#if defined(PROFILE_dev)
         LOG_DEBUG(3, "setting %d", i+1);
-        if (findlibc_debug > 3) dump_setting(0, setting);
+        if (debug_findlibc > 3) dump_setting(0, setting);
 #endif
         obzl_meta_flags *flags = obzl_meta_setting_flags(setting);
         /* int flags_ct = 0; */
@@ -707,8 +706,8 @@ EXPORT UT_array *findlib_subpkg_codeps(struct obzl_meta_package *_pkg,
         /* vals = resolve_setting_values(setting, flags, settings); */
         /* vals = obzl_meta_setting_values(setting); */
         LOG_DEBUG(3, "vals ct: %d", obzl_meta_values_count(vals));
-#if defined(PROFILE_fastbuild)
-        if (findlibc_debug > 2) dump_values(0, vals);
+#if defined(PROFILE_dev)
+        if (debug_findlibc > 2) dump_values(0, vals);
 #endif
         /* now we handle UPDATE settings */
 
@@ -834,8 +833,8 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
     for (int i = 0; i < settings_ct; i++) {
         setting = obzl_meta_settings_nth(settings, i);
         LOG_DEBUG(3, "setting %d", i+1);
-#if defined(PROFILE_fastbuild)
-        if (findlibc_debug > 3) dump_setting(0, setting);
+#if defined(PROFILE_dev)
+        if (debug_findlibc > 3) dump_setting(0, setting);
 #endif
         obzl_meta_flags *flags = obzl_meta_setting_flags(setting);
         /* int flags_ct = 0; */
@@ -885,8 +884,8 @@ EXPORT UT_array *findlib_pkg_deps(struct obzl_meta_package *_pkg,
         /* vals = resolve_setting_values(setting, flags, settings); */
         /* vals = obzl_meta_setting_values(setting); */
         LOG_DEBUG(3, "vals ct: %d", obzl_meta_values_count(vals));
-#if defined(PROFILE_fastbuild)
-        if (findlibc_debug > 3) dump_values(0, vals);
+#if defined(PROFILE_dev)
+        if (debug_findlibc > 3) dump_values(0, vals);
 #endif
         /* now we handle UPDATE settings */
 
@@ -1008,9 +1007,9 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
     LOG_DEBUG(3, "iterating settings", "");
     for (int i = 0; i < settings_ct; i++) {
         setting = obzl_meta_settings_nth(settings, i);
-#if defined(PROFILE_fastbuild)
+#if defined(PROFILE_dev)
         LOG_DEBUG(3, "setting %d", i+1);
-        if (findlibc_debug > 3) dump_setting(0, setting);
+        if (debug_findlibc > 3) dump_setting(0, setting);
 #endif
         obzl_meta_flags *flags = obzl_meta_setting_flags(setting);
         /* int flags_ct = 0; */
@@ -1060,8 +1059,8 @@ EXPORT UT_array *findlib_subpkg_deps(struct obzl_meta_package *_pkg,
         /* vals = resolve_setting_values(setting, flags, settings); */
         /* vals = obzl_meta_setting_values(setting); */
         LOG_DEBUG(3, "vals ct: %d", obzl_meta_values_count(vals));
-#if defined(PROFILE_fastbuild)
-        if (findlibc_debug > 2) dump_values(0, vals);
+#if defined(PROFILE_dev)
+        if (debug_findlibc > 2) dump_values(0, vals);
 #endif
         /* now we handle UPDATE settings */
 

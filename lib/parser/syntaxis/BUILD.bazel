@@ -1,0 +1,95 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+load("@bazel_skylib//rules:common_settings.bzl",
+     "bool_flag", "string_flag", "string_setting")
+
+load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
+load("@lemon//rules:lemon.bzl", "lemon")
+
+load("//config/cc:CONFIG.bzl",
+     COPTS   = "BASE_COPTS",
+     "PROFILE",
+     # DEPS    = "BASE_DEPS",
+     # "BASE_DEFINES",
+     "define_module_version")
+
+# TOOLCHAINS = ["//:module_profiles"]
+
+# PROFILE = ["PROFILE_$(COMPILATION_MODE)"]
+
+######
+lemon(
+    name = "syntaxis",
+    yy   = "meta_syntaxis.y",
+    outs = ["meta_syntaxis.c","meta_syntaxis.out"],
+    defines = select({
+        ":yydebug?": ["YYDEBUG", "TRACING"],
+        "//conditions:default":   []
+    }) + select({
+        ":yytrace?": ["YYTRACE"],
+        "//conditions:default":   []
+    }),
+    visibility = [
+        "//lib:__subpackages__",
+        "//test:__pkg__"
+    ]
+)
+
+################################################################
+## enable meta ast debugging: --//bootstrap:ast-dump
+bool_flag(name = "ast-dump", build_setting_default = 0)
+config_setting(name = "ast-dump-enabled",
+               flag_values = {":ast-dump": "True"})
+config_setting(name = "ast-dump-disabled",
+               flag_values = {":ast-dump": "False"})
+
+## enable meta ast debugging: --//bootstrap:ast-trace
+bool_flag(name = "ast-trace", build_setting_default = 0)
+config_setting(name = "ast-trace-enabled",
+               flag_values = {":ast-trace": "True"})
+config_setting(name = "ast-trace-disabled",
+               flag_values = {":ast-trace": "False"})
+
+## enable parser debugging: --//bootstrap:yydebug
+bool_flag(name = "yydebug", build_setting_default = 0)
+config_setting(name = "yydebug?", flag_values = {":yydebug": "True"})
+# config_setting(name = "yydebug-disabled", flag_values = {":yydebug": "False"})
+bool_flag(name = "yydebug-exit-on-error", build_setting_default = 0)
+config_setting(name = "yydebug-exit-on-error-enabled",
+               flag_values = {":yydebug-exit-on-error": "True"})
+
+bool_flag(name = "yytrace", build_setting_default = 0)
+config_setting(name = "yytrace?", flag_values = {":yytrace": "True"})
+# config_setting(name = "yytrace-disabled", flag_values = {":yytrace": "False"})
+
+## debug parse rules
+string_flag(name = "yydebug-rules", build_setting_default = "")
+
+# wtf? these or for opam
+# config_setting(name = "yydebug-fpf",
+#                flag_values = {":yydebug-rules": "fpf"})
+# config_setting(name = "yydebug-fvf",
+#                flag_values = {":yydebug-rules": "fvf"})
+# config_setting(name = "yydebug-filter",
+#                flag_values = {":yydebug-rules": "filter"})
+# config_setting(name = "yydebug-build-filter",
+#                flag_values = {":yydebug-rules": "build-filter"})
+
+## enable lexer debugging: --//bootstrap:lexdebug
+bool_flag(name = "lexdebug", build_setting_default = 0)
+config_setting(name = "lexdebug-enabled", flag_values = {":lexdebug": "True"})
+config_setting(name = "lexdebug-disabled", flag_values = {":lexdebug": "False"})
+
+string_flag(name = "lexdebug-rules", build_setting_default = "")
+config_setting(name = "lexdebug-version",
+               flag_values = {":lexdebug-rules": "version"})
+
+## these are opam things
+# config_setting(name = "lexdebug-fpf",
+#                flag_values = {":lexdebug-rules": "fpf"})
+# config_setting(name = "lexdebug-fvf",
+#                flag_values = {":lexdebug-rules": "fvf"})
+# config_setting(name = "lexdebug-filter",
+#                flag_values = {":lexdebug-rules": "filter"})
+# config_setting(name = "lexdebug-build-filter",
+#                flag_values = {":lexdebug-rules": "build-filter"})

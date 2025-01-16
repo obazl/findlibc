@@ -2,8 +2,14 @@
 C library for reading OCaml findlib META files
 
 
-== configuration
+This library reads META files directly; it does not use the `findib` library or the `ocamlfind` program.
 
+It does not have a well-organized public API, since it is (currently)
+only intended for use by other OBazl libraries such as https://github.com/obazl/mibl[mibl].  If you would like to use it to build your own tool please file an issue.
+
+=== ocamlfind configuration
+
+This is how `findlib` (i.e. `ocamlfind`) is configured.
 
 
 === findlib.conf
