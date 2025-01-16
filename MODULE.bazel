@@ -1,35 +1,30 @@
 module(
-    name = "findlibc",
-    version = "2.0.0",
-    compatibility_level = 2,
-    bazel_compatibility = [">=6.4.0"]
+    name                = "findlibc",
+    version             = "3.0.0",
+    compatibility_level = 3,
+    bazel_compatibility = [">=8.0.0"]
 )
 
-## bcr deps:
-bazel_dep(name = "platforms",      version = "0.0.8")
-bazel_dep(name = "bazel_skylib",   version = "1.5.0")
+## bcr:
+bazel_dep(name = "platforms",      version = "0.0.11")
+bazel_dep(name = "bazel_skylib",   version = "1.7.1")
+bazel_dep(name = "rules_cc",       version = "0.0.17")
 
 ## obazl deps:
-bazel_dep(name = "gopt",           version = "10.0.0.bzl.1")
-bazel_dep(name = "liblogc",        version = "2.0.0")
-bazel_dep(name = "makeheaders",    version = "2.0.0")
-bazel_dep(name = "obazl_tools_cc", version = "2.0.0")
-bazel_dep(name = "semverc",        version = "2.0.0")
-bazel_dep(name = "uthash",         version = "3.0.0")
+bazel_dep(name = "obazl_config_cc", version = "3.0.0")
 
-bazel_dep(name = "re2c",           version = "3.1.0")
-bazel_dep(name = "lemon",          version = "3.42.0")
+## 3rd party
+bazel_dep(name = "liblogc",        version = "3.0.0")
+bazel_dep(name = "makeheaders",    version = "3.0.0")
+bazel_dep(name = "semverc",        version = "3.0.0")
+bazel_dep(name = "uthash",         version = "2.3.0.bzl.8")
 
 ## dev deps
-bazel_dep(name = "unity",          version = "2.5.2.bzl.1",
+bazel_dep(name = "gopt",           version = "10.0.0.bzl.8",
           dev_dependency = True)
-
-
-# local_path_override(module_name = "gopt",
-#                     path = "../../obazl/gopt")
-# local_path_override(module_name = "liblogc",
-#                     path = "../../obazl/liblogc")
-# local_path_override(module_name = "makeheaders",
-#                     path = "../../obazl/makeheaders")
-# local_path_override(module_name = "obazl_tools_cc",
-#                     path = "../../obazl/obazl_tools_cc")
+bazel_dep(name = "re2c",           version = "3.1.0",
+          dev_dependency = True)
+bazel_dep(name = "lemon",          version = "3.42.0.bzl.8",
+          dev_dependency = True)
+bazel_dep(name = "unity",          version = "2.6.1.bzl",
+          dev_dependency = True)

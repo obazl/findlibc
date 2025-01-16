@@ -1,27 +1,20 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag")
 
 load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
-load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//config/cc:CONFIG.bzl", "BASE_COPTS", "PROFILE")
-
-# TOOLCHAINS = ["//:module_profiles"]
-
-# exports_files(glob([
-#     # "ansi_colors.h",
-#     "findlibc_debug.c",
-#     # "macros_debug.h", "macros_ndebug.h",
-# ]))
 
 ################################################################
 cc_library(
     name = "findlibc",
     # alwayslink = True,
-    # srcs = ["findlibc.c"],
+    srcs = ["findlibc.c"],
     hdrs = ["findlibc.h"],
     includes = ["."],
-    implementation_deps = [
+    deps = [
         "//lib/parser:meta_parser",
         "//lib/map_reduce:findlib_map_reduce",
         "@liblogc//lib:logc",
@@ -29,7 +22,7 @@ cc_library(
         "@uthash//lib:uthash",
     ],
     copts = BASE_COPTS + select({
-        "@makeheaders//compilation_mode:fastbuild": [],
+        "@obazl_config_cc//profile:dev?": [],
         # else findlib.c will be empty, so:
         "//conditions:default": ["-Wno-empty-translation-unit"]
     }),
@@ -62,7 +55,7 @@ makeheaders(
         "//lib/parser:meta_values.c",
         "//lib/map_reduce:findlib_map_reduce.c",
     ] + select({
-        "@makeheaders//compilation_mode:fastbuild": [
+        "@obazl_config_cc//profile:dev?": [
             "//lib/parser:meta_debugging.c",
         ],
         "//conditions:default": []

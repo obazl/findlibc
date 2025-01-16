@@ -1,27 +1,21 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 load("@bazel_skylib//rules:common_settings.bzl",
      "bool_flag", "string_flag", "string_setting")
 
 load("@makeheaders//rules:makeheaders.bzl", "makeheaders")
-load("@lemon//src:BUILD.bzl", "lemon")
 
 load("//config/cc:CONFIG.bzl",
      COPTS   = "BASE_COPTS",
      "PROFILE",
-     # DEPS    = "BASE_DEPS",
-     # "BASE_DEFINES",
      "define_module_version")
 
-# TOOLCHAINS = ["//:module_profiles"]
+exports_files(glob(["*.c"]))
 
-# PROFILE = ["PROFILE_$(COMPILATION_MODE)"]
-
-exports_files(
-    glob(
-        ["*.c"],
-        # meta_syntaxis.c already exported by lemon
-        exclude = ["meta_syntaxis.c"]
-    )
-)
+######################################################
+## dev flag tells Bazel to regenerate the parser
+bool_flag(name = "dev", build_setting_default = False)
+config_setting(name = "dev?", flag_values = {":dev": "True"})
 
 ################################################################
 cc_library(
@@ -34,10 +28,10 @@ cc_library(
         "meta_properties.c",
         "meta_settings.c",
         "meta_values.c",
-        ":meta_syntaxis",
         ":mkhdrs",
     ],
-    implementation_deps = [ # DEPS + [
+    implementation_deps = [
+        ":meta_syntaxis",
         "@liblogc//lib:logc",
         "@semverc//lib:semverc",
         "@uthash//lib:uthash",
@@ -45,9 +39,7 @@ cc_library(
     ],
     includes = ["."],
     copts = COPTS + [
-        # "-I$(GENDIR)/lib/parser"
-        # "-I$(@semverc)/src",
-        # "-I$(GENDIR)/$(@)/lib/parser",
+        "-I$(GENDIR)/lib/parser"
     ],
     defines       = PROFILE,
     local_defines = define_module_version() + select({
@@ -59,7 +51,6 @@ cc_library(
     # DEBUG_ENTRIES, DEBUG_FLAGS, DEBUG_PACKAGES
     # DEBUG_PROPERTIES, DEBUG_SETTINGS, DEBUG_VALUES
     # DEBUG_LEX
-    # toolchains = TOOLCHAINS,
     visibility = [
         "//lib:__pkg__",
         "//test:__subpackages__"
@@ -70,16 +61,22 @@ cc_library(
 cc_library(
     name = "meta_syntaxis",
     alwayslink = True,
-    srcs = [
-        "meta_syntaxis.c",
-        ":mkhdrs",
-        # ":meta_syntaxis_h",
-    ] + select({
-        "@makeheaders//compilation_mode:fastbuild": [
+    srcs = select({
+        ":dev?": [
+            "//lib/parser/syntaxis:meta_syntaxis.c",
+            ":mkhdrs"
+        ],
+        "//conditions:default": [
+            "meta_syntaxis.c",
+            "meta_syntaxis.h",
+        ],
+    }) + select({
+        ":dev?": [
             "meta_debugging.c",
         ],
         "//conditions:default": []
     }),
+    includes = ["."],
     deps = [ # DEPS + [
         "@liblogc//lib:logc",
         "@semverc//lib:semverc",
@@ -90,21 +87,9 @@ cc_library(
         "-Wno-unused-variable",
         "-Wno-visibility",
 
-        ## NOTE: generated meta_syntaxis.c includes header with
-        ## full bazel path, e.g.
-        ## #include "bazel-out/darwin_arm64-fastbuild/bin/<segs>/src/parser/meta_syntaxis.h"
-        ## where <segs> will be null (if building w/in findlibc repo)
-        ## or external/findlibc~<version> if building as an external repo
-        ## so we always need this:
-        "-I.", # DO NOT DELETE
-
-        # "-I$(@semverc)/src",
-
-
         ## for mkhdrs output:
-        # "-I$(GENDIR)/$(@)/lib/parser"
+        "-I$(GENDIR)/lib/parser"
     ],
-    includes = ["."],
     defines = PROFILE + select({
         ## for strdup, strndup:
         "@platforms//os:linux": ["_POSIX_C_SOURCE=200809L"],
@@ -117,26 +102,7 @@ cc_library(
         ":yytrace?": ["YYTRACE"],
         "//conditions:default":   []
     }),
-    # toolchains = TOOLCHAINS,
-    visibility = ["//test:__subpackages__"]
-)
-
-########
-lemon(
-    name = "gen_meta_syntaxis",
-    yy   = "meta_syntaxis.y",
-    outs = ["meta_syntaxis.c","meta_syntaxis.out"],
-    defines = select({
-        ":yydebug?": ["YYDEBUG", "TRACING"],
-        "//conditions:default":   []
-    }) + select({
-        ":yytrace?": ["YYTRACE"],
-        "//conditions:default":   []
-    }),
-    visibility = [
-        "//lib:__subpackages__",
-        "//test:__pkg__"
-    ]
+    visibility = ["//visibility:public"]
 )
 
 ################################################################
@@ -144,7 +110,6 @@ makeheaders(
     name = "mkhdrs",
     hdrs_srcs = [
         "meta_parser.c",
-        "meta_syntaxis.c",
         "meta_entries.c",
         "meta_flags.c",
         "meta_packages.c",
@@ -153,46 +118,31 @@ makeheaders(
         "meta_values.c",
         # "utils.c",
     ] + select({
-        "@makeheaders//compilation_mode:fastbuild": [
-            "meta_debugging.c"],
-        #"@cc_config//profile:dev?": ["meta_debugging.c"],
+        ":dev?": [
+            "//lib/parser/syntaxis:meta_syntaxis.c",
+        ],
+        "//conditions:default": ["meta_syntaxis.c"],
+    }) + select({
+        ":dev?": ["meta_debugging.c"],
         "//conditions:default": []
     }),
     additional_srcs = [
-        # no header outputs for these
-        "//lib/lexer:meta_lexis.c",
-        "@makeheaders//logging:ansi_colors.h",
     ] + select({
-        "@makeheaders//compilation_mode:fastbuild": [
-            "@makeheaders//logging:macros_debug.h"
+        "//lib/lexer:dev?": [
+            "//lib/lexer/lexis:meta_lexis.c",
         ],
         "//conditions:default": [
-            "@makeheaders//logging:macros_ndebug.h"
+            "//lib/lexer:meta_lexis.c",
         ]
-    }),
+    }) + ["@liblogc//macros:ansi_colors.h"] + select({
+        "@obazl_config_cc//profile:dev?": [
+            "@liblogc//macros:logging_debug.h"
+        ],
+        "//conditions:default": [
+            "@liblogc//macros:logging_ndebug.h"
+        ]
+    })
 )
-
-# makeheaders(
-#     name = "meta_syntaxis_h",
-#     hdrs_srcs = [
-#         "meta_syntaxis.c",
-#     ],
-#     additional_srcs = [
-#         # no header outputs for these
-#         "//lib/lexer:meta_lexis.c",
-#         "meta_entries.c",
-#         "meta_packages.c",
-#         "meta_values.c",
-#         "//lib:ansi_colors.h",
-#     ] + select({
-#         # "//config/profile:dev?": [
-#         # "@cc_config//profile:dev?": [
-#         "@cc_config//trace:trace?": [
-#             "//lib:ansi_colors.h", "//lib:trace_dev.h"
-#         ],
-#         "//conditions:default": ["//lib:trace_prod.h"]
-#     }),
-# )
 
 ################################################################
 ## enable meta ast debugging: --//bootstrap:ast-dump
@@ -223,14 +173,6 @@ config_setting(name = "yytrace?", flag_values = {":yytrace": "True"})
 
 ## debug parse rules
 string_flag(name = "yydebug-rules", build_setting_default = "")
-config_setting(name = "yydebug-fpf",
-               flag_values = {":yydebug-rules": "fpf"})
-config_setting(name = "yydebug-fvf",
-               flag_values = {":yydebug-rules": "fvf"})
-config_setting(name = "yydebug-filter",
-               flag_values = {":yydebug-rules": "filter"})
-config_setting(name = "yydebug-build-filter",
-               flag_values = {":yydebug-rules": "build-filter"})
 
 ## enable lexer debugging: --//bootstrap:lexdebug
 bool_flag(name = "lexdebug", build_setting_default = 0)
@@ -240,11 +182,3 @@ config_setting(name = "lexdebug-disabled", flag_values = {":lexdebug": "False"})
 string_flag(name = "lexdebug-rules", build_setting_default = "")
 config_setting(name = "lexdebug-version",
                flag_values = {":lexdebug-rules": "version"})
-config_setting(name = "lexdebug-fpf",
-               flag_values = {":lexdebug-rules": "fpf"})
-config_setting(name = "lexdebug-fvf",
-               flag_values = {":lexdebug-rules": "fvf"})
-config_setting(name = "lexdebug-filter",
-               flag_values = {":lexdebug-rules": "filter"})
-config_setting(name = "lexdebug-build-filter",
-               flag_values = {":lexdebug-rules": "build-filter"})

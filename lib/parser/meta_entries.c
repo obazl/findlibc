@@ -10,12 +10,10 @@
 
 #include "meta_entries.h"
 
-#if defined(PROFILE_fastbuild)
-#define DEBUG_LEVEL findlibc_debug
+#define DEBUG_LEVEL debug_findlibc
 extern int  DEBUG_LEVEL;
-#define TRACE_FLAG findlibc_trace
+#define TRACE_FLAG trace_findlibc
 extern bool TRACE_FLAG;
-#endif
 
 /* **************************************************************** */
 #if EXPORT_INTERFACE

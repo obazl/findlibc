@@ -25,12 +25,10 @@
 
 /* for testing we don't depend on libfindlibc so we
    need to provide these: */
-#if defined(PROFILE_fastbuild)
-#define DEBUG_LEVEL findlibc_debug
+#define DEBUG_LEVEL debug_findlibc
 int  DEBUG_LEVEL;
-#define TRACE_FLAG findlibc_trace
+#define TRACE_FLAG trace_findlibc
 bool TRACE_FLAG;
-#endif
 
 LOCAL bool _is_empty(const char *s)
 {
@@ -193,14 +191,12 @@ int main(int argc, char *argv[])
 
     while ((opt = getopt(argc, argv, "dtf:hv")) != -1) {
         switch (opt) {
-#if defined(PROFILE_fastbuild)
         case 'd':
-            findlibc_debug++;
+            debug_findlibc++;
             break;
         case 't':
-            findlibc_trace = true;
+            trace_findlibc = true;
             break;
-#endif
         case 'f':
             /* BUILD.bazel or BUILD file */
             utstring_printf(findlib_file, "%s", optarg);

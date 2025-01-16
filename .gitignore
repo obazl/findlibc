@@ -6,6 +6,9 @@ bazel-*
 *.gz
 log.*
 tarballs
+GPATH
+GRTAGS
+GTAGS
 
 # Prerequisites
 *.d

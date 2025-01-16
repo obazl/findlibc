@@ -9,6 +9,11 @@
 
 const char *findlibc_version = FINDLIBC_VERSION;
 
+#define DEBUG_LEVEL debug_findlibc
+extern int  DEBUG_LEVEL;
+#define TRACE_FLAG trace_findlibc
+extern bool TRACE_FLAG;
+
 struct obzl_meta_package *MAIN_PKG;
 
 LOCAL bool _is_empty(const char *s)

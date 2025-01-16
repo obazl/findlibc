@@ -9,15 +9,15 @@
 
 extern const UT_icd ut_str_icd;
 
+#define DEBUG_LEVEL debug_findlibc
+extern int  DEBUG_LEVEL;
+#define TRACE_FLAG trace_findlibc
+extern bool TRACE_FLAG;
+
 #if defined(DEBUG_VALUES) || defined (TRACING)
 /* extern int indent; */
 /* extern int delta; */
 /* extern char *sp; */
-#endif
-
-#if defined(PROFILE_fastbuild)
-extern int  findlibc_debug;
-extern bool findlibc_trace;
 #endif
 
 #if EXPORT_INTERFACE

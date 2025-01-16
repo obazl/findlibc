@@ -1,7 +1,5 @@
 #include <stdbool.h>
 
-#if defined(PROFILE_fastbuild)
-int  findlibc_debug;
-bool findlibc_trace;
-#endif
+int  debug_findlibc = 0;
+bool trace_findlibc = false;
 

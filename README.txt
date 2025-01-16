@@ -2,6 +2,7 @@ Need to make a distinction between:
 
 * findlib (META files)
 * OPAM, which uses/organizes META files.
+* Dune, ditto
 
 Strictly speaking libfindlib should have narrow scope of just reading
 META files. Navigating an OPAM switch is a separate issue.

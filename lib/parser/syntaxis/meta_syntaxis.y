@@ -61,6 +61,7 @@ extern char *fl_sp;
 
 %type property { struct obzl_meta_property* }
 %destructor property {
+    (void)the_root_pkg;
     log_trace("freeing property");
     /* free($$); */
 }
@@ -69,24 +70,28 @@ extern char *fl_sp;
 
 %type entry { struct obzl_meta_entry* }
 %destructor entry {
+    (void)the_root_pkg;
     log_trace("freeing entry");
     free($$);
 }
 
 %type entries { obzl_meta_entries* } // UT_array* }
 %destructor entries {
+    (void)the_root_pkg;
     log_trace("freeing entries");
     utarray_free($$->list);
 }
 
 %type flag { struct obzl_meta_flag* }
 %destructor flag {
+    (void)the_root_pkg;
     log_trace("freeing flag %s", $$->s);
     free($$);
 }
 
 %type flags { UT_array* }
 %destructor flags {
+    (void)the_root_pkg;
     log_trace("freeing flags");
     utarray_free($$);
 }
@@ -94,18 +99,22 @@ extern char *fl_sp;
 /* %type properties { struct obzl_meta_property* } */
 %type properties { UT_array* }  /* array of obzl_meta_property */
 %destructor properties {
+    (void)the_root_pkg;
     log_trace("freeing properties");
     /* free($$); */
 }
 
 %type package { struct obzl_meta_package* }
 %destructor package {
+    (void)the_root_pkg;
+    (void)the_root_pkg;
     log_trace("freeing package");
     /* free($$); */
 }
 
 %type packages { UT_array* }
 %destructor packages {
+    (void)the_root_pkg;
     log_trace("freeing packages");
     /* free($$); */
 }
@@ -113,12 +122,15 @@ extern char *fl_sp;
 /* %type words { UT_array* } */
 %type words { obzl_meta_values* }
 %destructor words {
+    (void)the_root_pkg;
     log_trace("freeing words");
     utarray_free($$->list);
 }
 
 
 %syntax_error {
+    (void)yymajor;
+    (void)yyminor;
     log_error("meta_syntaxis.y: **************** Syntax error! ****************");
     fprintf(stdout, "meta_syntaxis.y: **************** Syntax error! ****************\n");
     /* fprintf(stdout, "meta_syntaxis.y: name: %s\n", the_root_pkg->name); */
@@ -126,7 +138,7 @@ extern char *fl_sp;
     fprintf(stdout, "meta_syntaxis.y: path: %s\n", the_root_pkg->path);
     /* fprintf(stdout, "meta_syntaxis.y: dir: %s\n", the_root_pkg->directory); */
     log_error("meta_syntaxis.y: meta: %s\n", the_root_pkg->metafile);
-    fprintf(stdout, "meta_syntaxis.y: meta: %s\n", the_root_pkg->metafile);
+    fprintf(stdout, "meta_syntaxis.y: META: %s\n", the_root_pkg->metafile);
     exit(EXIT_FAILURE);
 }
 
@@ -199,7 +211,6 @@ entries(ENTRIES) ::= entries(PREVENTRIES) entry(ENTRY) . {
 
     normalize_entries(PREVENTRIES, ENTRY);
     ENTRIES = PREVENTRIES;
-    /* log_trace("after normalization"); */
 #ifdef YYDEBUG
     /* log_trace("//entries ::= entries entry DONE"); */
     /* dump_entries(delta+indent, ENTRIES); */

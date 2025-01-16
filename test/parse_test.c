@@ -26,12 +26,10 @@ UT_string *build_file;
 
 UT_string *buffer;
 
-#if defined(PROFILE_fastbuild)
-#define DEBUG_LEVEL findlibc_debug
+#define DEBUG_LEVEL debug_findlibc
 extern int  DEBUG_LEVEL;
-#define TRACE_FLAG findlibc_trace
+#define TRACE_FLAG trace_findlibc
 extern bool TRACE_FLAG;
-#endif
 
 bool _skip_pkg(char *pkg)
 {
@@ -161,14 +159,12 @@ int main(int argc, char *argv[])
 
     while ((opt = getopt(argc, argv, "dtf:hv")) != -1) {
         switch (opt) {
-#if defined(PROFILE_fastbuild)
         case 'd':
-            findlibc_debug++;
+            debug_findlibc++;
             break;
         case 't':
-            findlibc_trace = true;
+            trace_findlibc = true;
             break;
-#endif
         case 'f':
             /* BUILD.bazel or BUILD file */
             utstring_printf(meta_file, "%s", optarg);
@@ -182,7 +178,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    LOG_DEBUG(0, "DEBUG ct: %d", findlibc_debug);
+    LOG_DEBUG(0, "DEBUG ct: %d", debug_findlibc);
 
     if (utstring_len(meta_file) == 0) {
         log_error("-- -f /path/to/META.file must be provided.");
