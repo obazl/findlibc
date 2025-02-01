@@ -81,6 +81,7 @@ loop:
       re2c:define:YYMTAGP = mtag;
       re2c:define:YYMTAGN = mtag;
       re2c:yyfill:enable  = 0;
+      re2c:eof = -1; 
 
       re2c:flags:tags = 1;
 
@@ -109,7 +110,7 @@ loop:
         "," { goto loop; }
         wsnl { goto loop; }
 
-        "#" .* eol {
+        "#" [^\n\x00]* eol {
             /* return COMMENT; */
             goto loop;          /* skip comments */
         }
@@ -220,10 +221,6 @@ loop:
         end       {
         /* printf("ending\n"); */
         return 0;
-        }
-        ws | eol {
-        // printf("looping\n");
-        goto loop;
         }
 
     */
