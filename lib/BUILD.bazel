@@ -22,7 +22,7 @@ cc_library(
         "@uthash//lib:uthash",
     ],
     copts = BASE_COPTS + select({
-        "@obazl_config_cc//profile:dev?": [],
+        "@obazl_tools_cc//profile:dev?": [],
         # else findlib.c will be empty, so:
         "//conditions:default": ["-Wno-empty-translation-unit"]
     }),
@@ -55,7 +55,7 @@ makeheaders(
         "//lib/parser:meta_values.c",
         "//lib/map_reduce:findlib_map_reduce.c",
     ] + select({
-        "@obazl_config_cc//profile:dev?": [
+        "@obazl_tools_cc//profile:dev?": [
             "//lib/parser:meta_debugging.c",
         ],
         "//conditions:default": []

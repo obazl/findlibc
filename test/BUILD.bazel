@@ -89,7 +89,7 @@ makeheaders(
         "//lib/lexer:meta_lexis.c",
         "//lib/parser:meta_syntaxis.c",
     ] + select({
-        "@obazl_config_cc//profile:dev?": [
+        "@obazl_tools_cc//profile:dev?": [
             "@liblogc//macros:ansi_colors.h",
             "@liblogc//macros:logging_debug.h"
         ],
