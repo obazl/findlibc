@@ -1,6 +1,6 @@
 module(
     name                = "findlibc",
-    version             = "3.0.0",
+    version             = "3.0.0.dev",
     compatibility_level = 3,
     bazel_compatibility = [">=7.0.0"]
 )
@@ -11,11 +11,7 @@ bazel_dep(name = "bazel_skylib",   version = "1.7.1")
 bazel_dep(name = "rules_cc",       version = "0.1.1")
 
 ## obazl deps:
-bazel_dep(name = "obazl_tools_cc",  version = "3.0.0")
-git_override(module_name = "obazl_tools_cc",
-             branch  = "3.0.0.dev",
-             remote = "https://github.com/obazl/obazl_tools_cc.git"
-             )
+bazel_dep(name = "obazl_tools_cc",  version = "3.0.0.dev")
 
 ## 3rd party
 bazel_dep(name = "liblogc",        version = "3.0.0")
@@ -31,5 +27,5 @@ bazel_dep(name = "re2c",           version = "4.0.2.bzl",
 
 bazel_dep(name = "lemon",          version = "3.42.0.bzl",
           dev_dependency = True)
-bazel_dep(name = "unity",          version = "2.6.1.bzl.7",
+bazel_dep(name = "unity",          version = "2.6.1.bzl",
           dev_dependency = True)
